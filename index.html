@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Cấu hình Tailwind cho dark mode
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155',
+                            600: '#475569',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center">
+    <div class="bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-md border border-gray-700">
+        <h1 class="text-2xl font-bold text-center text-white mb-6">Đăng nhập</h1>
+        
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-300 mb-1">
+                    Username
+                </label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    required
+                    class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                    placeholder="Nhập username"
+                >
+                <p class="text-xs text-gray-400 mt-1">Username phải từ 3 ký tự trở lên</p>
+            </div>
+            
+            <div>
+                <label for="fullname" class="block text-sm font-medium text-gray-300 mb-1">
+                    Họ và tên
+                </label>
+                <input 
+                    type="text" 
+                    id="fullname" 
+                    required
+                    class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                    placeholder="Nhập họ và tên"
+                >
+                <p class="text-xs text-gray-400 mt-1">Ví dụ: 01 Văn Duy, Lan Anh</p>
+            </div>
+            
+            <button 
+                type="submit"
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors mt-6"
+            >
+                Đăng nhập
+            </button>
+        </form>
+    </div>
+
+    <script src="js/login.js"></script>
+</body>
+</html>

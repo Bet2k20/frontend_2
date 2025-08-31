@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Giao diện Kéo thả</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .draggable {
+            touch-action: none;
+            cursor: grab;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .drop-zone {
+            min-height: 100px;
+            border: 2px dashed #cbd5e0;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-6">
+        <div class="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700">
+            <h1 class="text-xl font-bold text-center text-white mb-4">Giao diện Kéo thả</h1>
+            <p class="text-center text-gray-300 mb-4" id="userInfo"></p>
+        </div>
+
+        <!-- Khu vực kéo thả -->
+        <div class="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700">
+            <h2 class="text-lg font-semibold text-white mb-4">Kéo các đối tượng vào khu vực bên dưới:</h2>
+            
+            <!-- Các đối tượng có thể kéo -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                <div class="draggable bg-blue-500 text-white p-4 rounded-lg text-center font-medium" 
+                     draggable="true" data-item="item1">
+                    Đối tượng 1
+                </div>
+                <div class="draggable bg-green-500 text-white p-4 rounded-lg text-center font-medium" 
+                     draggable="true" data-item="item2">
+                    Đối tượng 2
+                </div>
+                <div class="draggable bg-red-500 text-white p-4 rounded-lg text-center font-medium" 
+                     draggable="true" data-item="item3">
+                    Đối tượng 3
+                </div>
+                <div class="draggable bg-yellow-500 text-white p-4 rounded-lg text-center font-medium" 
+                     draggable="true" data-item="item4">
+                    Đối tượng 4
+                </div>
+                <div class="draggable bg-purple-500 text-white p-4 rounded-lg text-center font-medium" 
+                     draggable="true" data-item="item5">
+                    Đối tượng 5
+                </div>
+                <div class="draggable bg-pink-500 text-white p-4 rounded-lg text-center font-medium" 
+                     draggable="true" data-item="item6">
+                    Đối tượng 6
+                </div>
+            </div>
+
+            <!-- Khu vực thả -->
+            <div class="drop-zone rounded-lg p-4 mb-6 bg-gray-700" id="dropZone">
+                <p class="text-gray-400 text-center">Kéo các đối tượng vào đây</p>
+                <div id="dropArea" class="min-h-32"></div>
+            </div>
+
+            <!-- Nút submit -->
+            <button id="submitBtn" 
+                    class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                Gửi kết quả
+            </button>
+        </div>
+    </div>
+
+    <script src="js/gui1.js"></script>
+</body>
+</html>
