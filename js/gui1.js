@@ -1,4 +1,4 @@
-// js/gui1.js (Phiên bản đã sửa)
+// js/gui1.js 
 
 document.addEventListener('DOMContentLoaded', function () {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let draggedElementOriginalParent = null;
     let initialX, initialY, currentX, currentY;
     let offsetX, offsetY;
-    // --- Biến lưu trữ kích thước ban đầu ---
+    // --- Biến lưu trữ kích thước ban đầu của items đó tránh trường hợp nhảy loạn xạ kích thước ---
     let originalStyles = {};
 
     let draggedItems = {
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
         unassigned: []
     };
 
-    // --- Hàm tiện ích ---
+    // --- Hàm ex ---
     function getItemsInDropZone(dropZone) {
         return Array.from(dropZone.querySelectorAll('.draggable:not(.placeholder)'));
     }
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
             text: el.textContent.trim()
         }));
         draggedItems.unassigned = Array.from(draggablesContainer.children)
-            .filter(el => el.classList.contains('draggable')) // Bỏ điều kiện !.placeholder vì placeholder không có class draggable
+            .filter(el => el.classList.contains('draggable')) 
             .map(el => ({
                 id: el.dataset.item,
                 text: el.textContent.trim()
@@ -74,11 +74,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const rect = draggedElement.getBoundingClientRect();
 
-        // Giữ kích thước nguyên khi kéo để không bị 'bành' ra
+        // Giữ kích thước nguyên khi kéo tránh trường hợp nó bị thay đổi - khá quan trọng nếu ai sửa thì cẩn thận chỗ này
         draggedElement.style.width = `${rect.width}px`;
         draggedElement.style.height = `${rect.height}px`;
 
-        // Đặt vị trí ban đầu (dùng fixed để dễ tính toán so với viewport)
+        // Đặt vị trí ban đầu vs fixed 
         draggedElement.style.position = 'fixed';
         draggedElement.style.left = `${rect.left}px`;
         draggedElement.style.top = `${rect.top}px`;
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
             initialY = e.touches[0].clientY;
         }
 
-        // offset so với viewport (rect.left/top là viewport coords)
+        // offset so với viewport 
         offsetX = initialX - rect.left;
         offsetY = initialY - rect.top;
 
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault(); // ngăn cuộn trên mobile
         }
 
-        // Tính toạ độ mới so với viewport (position: fixed)
+        // Tính toạ độ mới so với viewport 
         const newLeft = currentX - offsetX;
         const newTop = currentY - offsetY;
 
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
             releaseY = r.top + r.height / 2;
         }
 
-        // Tạm tắt pointer-events của phần tử đang kéo để elementFromPoint trả về phần tử bên dưới
+        
         const prevPointer = draggedElement.style.pointerEvents;
         draggedElement.style.pointerEvents = 'none';
         const dropTarget = document.elementFromPoint(releaseX, releaseY);
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (targetDropZone) {
             if (targetDropZone !== draggedElementOriginalParent) {
-                // Nếu kéo từ drop-zone khác -> xóa placeholder cũ
+                // Nếu kéo từ drop-zone khác ==> xóa placeholder cũ
                 if (draggedElementOriginalParent && draggedElementOriginalParent.classList.contains('drop-zone')) {
                     try { draggedElementOriginalParent.removeChild(draggedElement); } catch (err) {}
                     managePlaceholder(draggedElementOriginalParent);
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const placeholder = targetDropZone.querySelector('.placeholder');
                 if (placeholder) placeholder.remove();
 
-                // Reset kiểu inline trước khi append để nó nhận layout mới
+                // Reset inline trước khi append để nó nhận layout mới
                 draggedElement.style.position = '';
                 draggedElement.style.left = '';
                 draggedElement.style.top = '';
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 targetDropZone.appendChild(draggedElement);
             } else {
-                // Thả về cùng parent (giữ nguyên vị trí trong DOM) -> reset style
+                
                 draggedElement.style.position = '';
                 draggedElement.style.left = '';
                 draggedElement.style.top = '';
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 draggedElement.style.height = '';
             }
         } else {
-            // Thả ngoài drop-zone -> trả về container chính nếu trước đó từ drop-zone
+            // Thả ngoài drop-zone -> trả về container chính
             if (draggedElementOriginalParent && draggedElementOriginalParent.classList.contains('drop-zone')) {
                 draggablesContainer.appendChild(draggedElement);
                 managePlaceholder(draggedElementOriginalParent);
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
         draggedElementOriginalParent = null;
     }
 
-    // --- Event Listeners cho kéo thả ---
+    // --- Listeners cho kéo thả ---
     const draggables = document.querySelectorAll('.draggable');
     draggables.forEach(draggable => {
         draggable.addEventListener('mousedown', dragStart);
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const statusUrl = `${backendUrl}/api/game/status`;
 
         fetch(statusUrl)
-            .then(response => response.json()) // Bỏ kiểm tra response.ok để đơn giản hóa
+            .then(response => response.json())
             .then(data => {
                 if (data.success && data.session.isActive) {
                     isGameActive = true;
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const statusUrl = `${backendUrl}/api/game/status`;
 
         fetch(statusUrl)
-            .then(response => response.json()) // Bỏ kiểm tra response.ok để đơn giản hóa
+            .then(response => response.json()) // Nên kiểm tra response.ok nhưng lười code quá
             .then(data => {
                 if (data.success && data.session.isActive) {
                     updateDraggedItemsState();
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => {
                 console.error('Lỗi khi kiểm tra trạng thái game trước submit:', error);
-                alert('⚠️ Không thể kết nối đến server!');
+                alert('⚠️ Không thể kết nối đến server! kiểm tra lại backend ');
             });
     }
 
@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: JSON.stringify(gameData)
         })
-            .then(response => response.json()) // Bỏ kiểm tra response.ok để đơn giản hóa
+            .then(response => response.json()) // tương tự như trên thì nên kiểm tra response.oke ....
             .then(data => {
                 if (data.success) {
                     alert('✅ Đã gửi kết quả thành công!');
@@ -398,12 +398,12 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.hostname === '0.0.0.0') {
             return 'http://localhost:3000';
         } else {
-            // Loại bỏ khoảng trắng thừa
+            
             return 'https://gamedragndrop-backend.onrender.com';
         }
     }
 
-    // --- Khởi tạo ban đầu ---
+    // --- Khởi tạo ---
     managePlaceholder(dropZone1);
     managePlaceholder(dropZone2);
 

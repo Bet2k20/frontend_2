@@ -34,22 +34,22 @@
             margin: 0;   
         }
         .drop-zone {
-            min-height: 120px; /* Điều chỉnh để phù hợp với draggable */
-            border: 2px dashed #cbd5e0; /* slate-300 */
+            min-height: 120px; 
+            border: 2px dashed #cbd5e0; 
             position: relative;
             transition: background-color 0.2s ease;
-            padding: 1rem; /* p-4 */
-            border-radius: 0 0 0.5rem 0.5rem; /* rounded-b-lg */
-            background-color: #374151; /* gray-700 */
+            padding: 1rem; 
+            border-radius: 0 0 0.5rem 0.5rem; 
+            background-color: #374151; 
             overflow-y: auto; /* Cho phép cuộn dọc nếu cần */
         }
         .drop-zone.active {
-            background-color: #dbeafe; /* blue-100 */
-            border-color: #3b82f6; /* blue-500 */
+            background-color: #dbeafe; 
+            border-color: #3b82f6; 
         }
         .drop-zone .placeholder {
             pointer-events: none;
-            color: #9ca3af; /* gray-400 */
+            color: #9ca3af; 
             text-align: center;
             font-style: italic;
             display: flex;
@@ -61,25 +61,25 @@
         .main-content {
             display: flex;
             flex-direction: column;
-            height: 100%; /* Chiếm toàn bộ chiều cao có thể */
+            height: 100%; 
         }
         /* --- Container cho 2 drop zone luôn nằm ngang --- */
         .drop-zones-container {
             display: flex;
             flex-direction: row;
-            gap: 1.5rem; /* gap-6 */
+            gap: 1.5rem; 
             flex-wrap: nowrap;
             width: 100%;
-            margin-top: 1.5rem; /* mt-6 */
-            margin-bottom: 1.5rem; /* mb-6 */
-            flex-grow: 1; /* Chiếm không gian còn lại */
+            margin-top: 1.5rem; 
+            margin-bottom: 1.5rem; 
+            flex-grow: 1; 
         }
         .drop-zone-column {
             flex: 1; /* Mỗi cột chiếm 1 phần bằng nhau */
             min-width: 0; /* Cho phép cột co lại nếu cần */
             display: flex;
             flex-direction: column;
-            height: 100%; /* Chiều cao đầy đủ */
+            height: 100%; 
         }
         /* Đảm bảo drop zone bên trong cột chiếm toàn bộ chiều cao */
         .drop-zone-column > .drop-zone {
@@ -88,64 +88,64 @@
         /* --- Điều chỉnh cho Màn hình Nhỏ (Điện thoại) --- */
         @media (max-width: 767px) { /* Dưới 'sm' breakpoint của Tailwind (768px) */
             .draggable {
-                min-height: 70px; /* Chiều cao nhỏ hơn */
-                padding: 0.4rem 0.6rem; /* p-2 */
-                font-size: 0.75rem; /* text-xs */
+                min-height: 70px; 
+                padding: 0.4rem 0.6rem; 
+                font-size: 0.75rem; 
             }
             .drop-zone {
                 min-height: 90px; /* Chiều cao tối thiểu nhỏ hơn */
-                padding: 0.75rem; /* p-3 */
+                padding: 0.75rem; 
                 max-height: 25vh; /* Giới hạn chiều cao theo phần trăm viewport */
             }
             .drop-zones-container {
-                gap: 1rem; /* gap-4 */
-                margin-top: 1rem; /* mt-4 */
-                margin-bottom: 1rem; /* mb-4 */
+                gap: 1rem;
+                margin-top: 1rem; 
+                margin-bottom: 1rem; 
             }
             h2 {
-                font-size: 1rem; /* text-lg */
-                margin-bottom: 1rem; /* mb-4 */
+                font-size: 1rem; 
+                margin-bottom: 1rem; 
             }
             h3 {
-                font-size: 1.125rem; /* text-xl */
-                padding: 0.5rem; /* p-2 */
+                font-size: 1.125rem; 
+                padding: 0.5rem;
             }
             button {
-                padding: 0.75rem; /* py-3 */
-                font-size: 0.875rem; /* text-sm */
+                padding: 0.75rem; 
+                font-size: 0.875rem; 
             }
-            /* Đảm bảo lưới các mục kéo có 2 cột trên điện thoại */
+            /* Đảm bảo lưới các mục kéo có 2 cột trên điện thoại cho tiện kéo thả */
             #draggablesContainer {
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                gap: 0.5rem !important; /* gap-2 */
+                gap: 0.5rem !important; 
             }
         }
         /* --- Điều chỉnh cho Màn hình Rất Nhỏ (Điện thoại nhỏ) --- */
-        @media (max-width: 479px) { /* Dưới 'sm' breakpoint thấp hơn (480px) */
+        @media (max-width: 479px) { 
              .draggable {
-                min-height: 60px; /* Chiều cao nhỏ hơn nữa */
-                padding: 0.3rem 0.5rem; /* p-1.5 */
-                font-size: 0.65rem; /* text-xs nhỏ hơn */
+                min-height: 60px; 
+                padding: 0.3rem 0.5rem; 
+                font-size: 0.65rem; 
             }
             .drop-zone {
-                min-height: 80px; /* Chiều cao tối thiểu nhỏ hơn nữa */
-                padding: 0.5rem; /* p-2 */
+                min-height: 80px; 
+                padding: 0.5rem; 
                 max-height: 22vh; /* Giới hạn chiều cao theo phần trăm viewport */
             }
             .drop-zones-container {
-                gap: 0.75rem; /* gap-3 */
+                gap: 0.75rem; 
             }
             h2 {
-                font-size: 0.875rem; /* text-base */
-                margin-bottom: 0.75rem; /* mb-3 */
+                font-size: 0.875rem; 
+                margin-bottom: 0.75rem; 
             }
             h3 {
-                font-size: 1rem; /* text-lg */
-                padding: 0.4rem; /* p-1.5 */
+                font-size: 1rem; 
+                padding: 0.4rem; 
             }
             button {
-                padding: 0.6rem; /* py-2.5 */
-                font-size: 0.8rem; /* text-xs */
+                padding: 0.6rem; 
+                font-size: 0.8rem; 
             }
              /* Đảm bảo lưới các mục kéo có 2 cột */
             #draggablesContainer {

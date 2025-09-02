@@ -1,9 +1,9 @@
-// gui2.js - giao diện quản lý cho LanAnhT02
+// gui2.js - usêrnam LanAnhT02 name: Lan Anh -- gui quản lý -- chưa bắt điều kiện nếu chưa đăng nhập mà trực tiếp vào gui2, nên bắt điều kiện đó nhưng lười quá
 document.addEventListener('DOMContentLoaded', function () {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (currentUser) {
         document.getElementById('userInfo').textContent =
-            `Xin chào ${currentUser.fullname} (${currentUser.username}) - Quản trị viên`;
+            `Xin chào cô ${currentUser.fullname} (${currentUser.username}) - Quản trị viên`;
     }
 
     const startGameBtn = document.getElementById('startGameBtn');
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function endGame() {
-        if (!confirm('Bạn có chắc chắn muốn kết thúc game?')) {
+        if (!confirm('Cô có chắc chắn muốn kết thúc game?')) {
             return;
         }
 
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ]
         };
 
-        // Tạo một phần tử div mô phỏng kết quả để hiển thị fullscreen
+        
         const answerResultElement = document.createElement('div');
         answerResultElement.className = 'result-item p-2 rounded-lg bg-gray-700 border border-gray-600 relative is-fullscreen';
         answerResultElement.style.position = 'fixed';
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
         answerResultElement.style.border = 'none';
         answerResultElement.style.borderRadius = '0';
 
-        // Nội dung hiển thị (giống như khi xem fullscreen kết quả)
+        
         const answerContentHtml = `
             <div class="result-user-fullscreen">Đáp án Mẫu</div>
             <div class="flex justify-between text-center text-lg font-semibold mb-2 mt-2">
@@ -251,17 +251,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         answerResultElement.innerHTML = answerContentHtml;
 
-        // Thêm nút "Quay lại"
+        // Nút back
         const backButton = document.createElement('button');
         backButton.className = 'fullscreen-back-btn';
         backButton.textContent = '⬅️ Quay lại';
         backButton.title = 'Quay lại giao diện chính';
         answerResultElement.appendChild(backButton);
 
-        // Gắn vào body
+        // append vào body
         document.body.appendChild(answerResultElement);
 
-        // Gắn sự kiện cho nút "Quay lại"
+        // event cho nút bac
         backButton.addEventListener('click', function (event) {
             event.stopPropagation();
             if (answerResultElement.parentNode) {
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Ngăn cập nhật kết quả khi đang xem đáp án
+        // Ngăn cập nhật kết quả khi đang xem đáp án -- Đôi khi không cần thiết , tùy theo hướng muốn bắt sự kieện
         isAnyResultFullscreen = true;
         stopResultsUpdateInterval();
     }
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function loadResults() {
         if (isAnyResultFullscreen) {
-            console.log("Có kết quả đang fullscreen, tạm dừng cập nhật.");
+            console.log("Có kết quả đang fullscreen, tạm dừng cập nhật."); // đang fullscreen cập nhật dẽ sảy ra lỗi logic nên là arlert cá i này
             return;
         }
 
@@ -443,8 +443,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const resultElement = document.createElement('div');
                 resultElement.className = 'result-item p-2 rounded-lg bg-gray-700 border border-gray-600 relative clickable-result cursor-pointer';
 
-                // --- Cập nhật phần headerHtml để tên user lớn hơn và căn giữa khi fullscreen ---
-                // Trong chế độ lưới nhỏ, tên vẫn hiển thị nhỏ và căn trái
+                
+                // Trong chế độ lưới nhỏ, tên vẫn hiển thị nhỏ và căn trái,
                 const headerHtml = `
                     <div class="flex justify-between items-start mb-1 flex-shrink-0">
                         <span class="font-medium text-white text-xs truncate">${result.user.fullname}</span>
@@ -468,14 +468,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 resultsGrid.appendChild(resultElement);
 
-                // --- Gắn sự kiện click để phóng to toàn màn hình với hiệu ứng 2 giai đoạn ---
+                // --- Gắn sự kiện click để phóng to toàn màn hình với hiệu ứng  ---
                 resultElement.addEventListener('click', function (event) {
                     // Ngăn chặn nếu click vào nút "Quay lại" (nếu có)
                     if (event.target.classList.contains('fullscreen-back-btn')) {
                         return;
                     }
 
-                    // --- Giai đoạn 1: Hiệu ứng thu nhỏ ---
+                    // ---  Hiệu ứng thu nhỏ ---
                     const originalTransition = this.style.transition;
                     this.style.transition = 'transform 0.1s ease';
                     this.style.transform = 'scale(0.92)';
@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         toggleResultFullscreen(this);
                         // Xóa ID timeout sau khi sử dụng
                         this._zoomTimeoutId = null;
-                    }, 50); // Chờ 50ms như yêu cầu
+                    }, 200); // Chờ 200ms làm màu
                 });
             });
 
@@ -509,7 +509,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Hàm createVisualizationHtml đã được cập nhật ---
+    // --- Hàm createVisualizationHtml  ---
     function createVisualizationHtml(itemsData, isFullscreen = false) {
         const frenchItems = itemsData.french || [];
         const vietnamItems = itemsData.vietnam || [];
@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const itemId = item.id || item;
                 const itemText = item.text || item;
                 
-                // --- Tạo nhãn hiển thị ---
+                // --- Tạo nhãn  ---
                 let displayLabel;
                 if (isFullscreen) {
                     // Nếu đang ở chế độ fullscreen, hiển thị nội dung đầy đủ
@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     // --- Style cho chế độ fullscreen ---
                     return `<span class="viz-item ${colorClass}" title="${itemText}">${displayLabel}</span>`;
                 } else {
-                    // --- Style cho chế độ lưới nhỏ (giữ nguyên) ---
+                    // --- Style cho chế độ lưới nhỏ  ---
                     return `<span class="viz-item ${colorClass}" title="${itemText}">${displayLabel}</span>`;
                 }
             }).join('');
@@ -570,13 +570,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     // --- Hết hàm createVisualizationHtml ---
 
-    // --- Hàm toggleResultFullscreen đã được sửa lỗi và thêm tiêu đề ---
+    // --- Hàm toggleResultFullscreen  ---
     function toggleResultFullscreen(resultElement) {
         const isFullscreen = resultElement.classList.contains('is-fullscreen');
 
         if (isFullscreen) {
             // --- Đóng chế độ fullscreen ---
-            // 1. Hủy bất kỳ timeout phóng to nào còn sót lại trên phần tử này
+            // 1. Hủy bất kỳ timeout phóng to nào còn sót lại trên phần tử này -- quan trọng chú ý nếu sủa
             if (resultElement._zoomTimeoutId) {
                 clearTimeout(resultElement._zoomTimeoutId);
                 resultElement._zoomTimeoutId = null;
@@ -657,8 +657,8 @@ document.addEventListener('DOMContentLoaded', function () {
             resultElement.appendChild(backButton);
 
             backButton.addEventListener('click', function (event) {
-                event.stopPropagation(); // Ngăn sự kiện click lan ra phần tử cha
-                toggleResultFullscreen(resultElement); // Gọi lại hàm để đóng
+                event.stopPropagation(); // Ngăn sự kiện click lan ra phần tử cha --- sửa mãi mới biết lỗi ở thiếu cái này
+                toggleResultFullscreen(resultElement); // Gọi lại hàm để close
             });
         }
     }

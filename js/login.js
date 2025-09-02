@@ -1,4 +1,4 @@
-// login.js - cập nhật để gửi thông tin kết nối
+// login.js - Chia ra 2 trường hợp dựa trên username và tên
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Lưu thông tin vào localStorage
+        // Lưu thông tin vào localStorage -- trường hợp tự reload trang -- nhưng cũng sẽ có trường hợp đăng nhập vào sau đó treo ở đó thì các lần tiếp theo sẽ vận còn user đó, ko biết có nên bắt đk này hay không?
         const currentUser = {
             username: username,
             fullname: fullname
@@ -26,10 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Kiểm tra điều kiện chuyển hướng
         if (username === 'LanAnhT02' && fullname === 'Lan Anh') {
-            // Chuyển hướng sang giao diện 2 (desktop)
+            // Chuyển hướng sang gui2 destop
             window.location.href = 'gui2.html';
         } else {
-            // Chuyển hướng sang giao diện 1 (mobile)
+            // Chuyển hướng sang gui1 (mobile); vì sửa trên pc nên vẫn có giao diện cho pc nè hehehe
             window.location.href = 'gui1.html';
         }
     });
@@ -58,15 +58,15 @@ function sendConnectionInfo(user) {
     });
 }
 
-// Hàm xác định URL backend dựa trên môi trường
+
 function getBackendUrl() {
-    // Nếu đang chạy local (localhost)
+    
     if (window.location.hostname === 'localhost' || 
         window.location.hostname === '127.0.0.1' || 
         window.location.hostname === '0.0.0.0') {
         return 'http://localhost:3000';
     } 
-    // Nếu đang chạy trên web (production)
+   
     else {
         return 'https://gamedragndrop-backend.onrender.com';
     }
