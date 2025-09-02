@@ -23,9 +23,34 @@
             }
         }
     </script>
+    <style>
+        #loginFormDesktop {
+            display: none;
+        }
+
+        #loginFormMobile {
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            #loginFormDesktop {
+                display: block;
+            }
+        }
+
+        @media (max-width: 767px) {
+            #loginFormMobile {
+                display: block;
+            }
+            body {
+                background-color: #1e293b;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-900 min-h-screen flex items-center justify-center">
-    <div class="bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-md border border-gray-700">
+    <!-- Form cho Desktop/Laptop -->
+    <div id="loginFormDesktop" class="bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-md border border-gray-700">
         <h1 class="text-2xl font-bold text-center text-white mb-6">Đăng nhập</h1>
         
         <form id="loginForm" class="space-y-4">
@@ -64,6 +89,50 @@
                 Đăng nhập
             </button>
         </form>
+    </div>
+
+    <!-- Form cho Mobile -->
+    <div id="loginFormMobile" class="w-full min-h-screen flex flex-col justify-center p-4">
+        <div class="bg-gray-800 rounded-lg shadow-lg w-full max-w-md mx-auto border border-gray-700 p-6">
+            <h1 class="text-2xl font-bold text-center text-white mb-6">Đăng nhập</h1>
+            
+            <form id="mobileLoginForm" class="space-y-4">
+                <div>
+                    <label for="mobileUsername" class="block text-sm font-medium text-gray-300 mb-1">
+                        Username
+                    </label>
+                    <input 
+                        type="text" 
+                        id="mobileUsername" 
+                        required
+                        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                        placeholder="Nhập username"
+                    >
+                    <p class="text-xs text-gray-400 mt-1">Username phải từ 3 ký tự trở lên, chỉ được sử dụng chữ cái tiếng Anh (A–Z, a–z), chữ số (0–9) thôi nhé!</p>
+                </div>
+                
+                <div>
+                    <label for="mobileFullname" class="block text-sm font-medium text-gray-300 mb-1">
+                        Tên người chơi
+                    </label>
+                    <input 
+                        type="text" 
+                        id="mobileFullname" 
+                        required
+                        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                        placeholder="Nhập tên người chơi"
+                    >
+                    <p class="text-xs text-gray-400 mt-1">Ví dụ: 01 Văn Duy hoặc Quang Hiệp,...</p>
+                </div>
+                
+                <button 
+                    type="submit"
+                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors mt-6"
+                >
+                    Đăng nhập
+                </button>
+            </form>
+        </div>
     </div>
 
     <script src="js/login.js"></script>

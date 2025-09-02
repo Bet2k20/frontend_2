@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const fullscreenToggleBtn = document.getElementById('fullscreenToggleBtn');
     const resultsContainer = document.getElementById('resultsContainer');
     const showResultsBtn = document.getElementById('showResultsBtn');
+    const showAnswerBtn = document.getElementById('showAnswerBtn');
 
     let playersPanelVisible = true;
     let isAnyResultFullscreen = false;
@@ -33,6 +34,9 @@ document.addEventListener('DOMContentLoaded', function () {
     
     if (showResultsBtn) {
         showResultsBtn.addEventListener('click', showResultsPanel);
+    }
+    if (showAnswerBtn) {
+        showAnswerBtn.addEventListener('click', showAnswerPanel); 
     }
 
     checkGameStatus();
@@ -78,9 +82,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 showNotification('🎮 Game đã bắt đầu!', 'success');
                 checkGameStatus();
                 switchPanelWithTransition(resultsPanel, gameInterfacePanel);
+                
                 if (showResultsBtn) {
                     showResultsBtn.classList.remove('hidden');
                 }
+
+                if (showAnswerBtn) {
+                    showAnswerBtn.classList.remove('hidden');
+                }
+                
             } else {
                 showNotification(`❌ ${data.message}`, 'error');
             }
@@ -126,6 +136,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (showResultsBtn) {
                     showResultsBtn.classList.add('hidden');
                 }
+                
+                if (showAnswerBtn) {
+                    showAnswerBtn.classList.add('hidden');
+                }
+
+
+
             } else {
                 showNotification(`❌ ${data.message}`, 'error');
             }
@@ -177,6 +194,87 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function showAnswerPanel() {
+        // Dữ liệu đáp án mẫu
+        const answerData = {
+            french: [
+                { id: 'item1', text: 'Cố tình bội ước' },
+                { id: 'item2', text: 'Gây hấn, khiêu khích, gây xung đột quân sự' },
+                { id: 'item3', text: 'Thảm sát đồng bào ở Hà Nội và một số địa phương' },
+                { id: 'item6', text: 'Đánh chiếm Hải Phòng, Lạng Sơn, Đà Nẵng, Hải Dương' },
+                { id: 'item7', text: 'Đưa liên tiếp ba tối hậu thư' },
+                { id: 'item8', text: 'Đơn phương cắt đứt mọi liên hệ với chính phủ Việt Nam' }
+                
+            ],
+            vietnam: [
+                { id: 'item4', text: 'Chỉ thị “Toàn dân kháng chiến”' },
+                { id: 'item5', text: 'Chủ trương nhân nhượng, hòa hoãn' },
+                { id: 'item9', text: 'Bày tỏ thiện chí hòa bình' },
+                { id: 'item10', text: 'Cứu vãn mối quan hệ Việt - Pháp' },
+                { id: 'item11', text: '“Lời kêu gọi toàn quốc kháng chiến”' }
+            ],
+            unassigned: [
+                { id: 'item12', text: 'Chiến tranh phá hoại miền Bắc' },
+                { id: 'item13', text: 'Đất nước bị chia cắt hai miền' },
+                { id: 'item14', text: 'Quốc sách “Ấp chiến lược”' }
+            ]
+        };
+
+        // Tạo một phần tử div mô phỏng kết quả để hiển thị fullscreen
+        const answerResultElement = document.createElement('div');
+        answerResultElement.className = 'result-item p-2 rounded-lg bg-gray-700 border border-gray-600 relative is-fullscreen';
+        answerResultElement.style.position = 'fixed';
+        answerResultElement.style.top = '0';
+        answerResultElement.style.left = '0';
+        answerResultElement.style.width = '100vw';
+        answerResultElement.style.height = '100vh';
+        answerResultElement.style.zIndex = '10001';
+        answerResultElement.style.backgroundColor = '#1f2937';
+        answerResultElement.style.padding = '1.5rem';
+        answerResultElement.style.display = 'flex';
+        answerResultElement.style.flexDirection = 'column';
+        answerResultElement.style.border = 'none';
+        answerResultElement.style.borderRadius = '0';
+
+        // Nội dung hiển thị (giống như khi xem fullscreen kết quả)
+        const answerContentHtml = `
+            <div class="result-user-fullscreen">Đáp án Mẫu</div>
+            <div class="flex justify-between text-center text-lg font-semibold mb-2 mt-2">
+                <div class="w-2/5 text-red-500">Về phía thực dân Pháp</div>
+                <div class="w-2/5 text-green-500">Về phía Việt Nam</div>
+                <div class="w-1/5 text-gray-500">Nội dung nhiễu</div>
+            </div>
+            <div class="result-content">
+                ${createVisualizationHtml(answerData, true)} <!-- Gọi hàm tạo HTML với isFullscreen = true -->
+            </div>
+        `;
+
+        answerResultElement.innerHTML = answerContentHtml;
+
+        // Thêm nút "Quay lại"
+        const backButton = document.createElement('button');
+        backButton.className = 'fullscreen-back-btn';
+        backButton.textContent = '⬅️ Quay lại';
+        backButton.title = 'Quay lại giao diện chính';
+        answerResultElement.appendChild(backButton);
+
+        // Gắn vào body
+        document.body.appendChild(answerResultElement);
+
+        // Gắn sự kiện cho nút "Quay lại"
+        backButton.addEventListener('click', function (event) {
+            event.stopPropagation();
+            if (answerResultElement.parentNode) {
+                answerResultElement.parentNode.removeChild(answerResultElement);
+            }
+        });
+
+        // Ngăn cập nhật kết quả khi đang xem đáp án
+        isAnyResultFullscreen = true;
+        stopResultsUpdateInterval();
+    }
+
+
     function checkGameStatus() {
         const backendUrl = getBackendUrl();
         const statusUrl = `${backendUrl}/api/game/status`;
@@ -205,6 +303,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (showResultsBtn) {
                             showResultsBtn.classList.remove('hidden');
                         }
+
+                        if (showAnswerBtn) {
+                            showAnswerBtn.classList.remove('hidden');
+                        }
+
+
+
                     } else {
                         statusElement.innerHTML = `
                             <div class="text-yellow-400 font-medium flex justify-center items-center">
@@ -221,6 +326,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (showResultsBtn) {
                             showResultsBtn.classList.add('hidden');
                         }
+
+                        if (showAnswerBtn) {
+                            showAnswerBtn.classList.add('hidden');
+                        }
+
+
                     }
                 }
             })
