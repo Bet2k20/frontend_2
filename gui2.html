@@ -208,6 +208,8 @@
         #gameInterfacePanel .drop-zone .placeholder {
             pointer-events: none;
         }
+
+        /* --- CSS CHO HIỆU ỨNG CHUYỂN TIẾP GIỮA CÁC PANEL --- */
         .panel-transition {
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
@@ -223,6 +225,7 @@
             opacity: 0;
             transform: translateY(-10px); /* Thoát lên trên một chút */
         }
+        /* ------------------------------------------ */
     </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -243,17 +246,15 @@
                             class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         🏁 Kết thúc Game
                     </button>
-                    <button id="showResultsBtn"
-                            class="bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-colors hidden sm:flex items-center justify-center">
-                        📊 Show đáp án
-                    </button>
-
                     <button id="togglePlayersBtn"
                             class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
                         👥 Ẩn/Hiện Người chơi
                     </button>
-                   
-                    
+                    <!-- Thêm nút Show đáp án ngay sau các nút điều khiển -->
+                    <button id="showResultsBtn"
+                            class="bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-colors hidden sm:flex items-center justify-center">
+                        📊 Show đáp án
+                    </button>
                 </div>
             </div>
 

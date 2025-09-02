@@ -12,12 +12,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const gameStatus = document.getElementById('gameStatus');
     const playersPanel = document.getElementById('playersPanel');
     const resultsPanel = document.getElementById('resultsPanel');
-    const gameInterfacePanel = document.getElementById('gameInterfacePanel'); // Thêm
+    const gameInterfacePanel = document.getElementById('gameInterfacePanel');
     const fullscreenToggleBtn = document.getElementById('fullscreenToggleBtn');
     const resultsContainer = document.getElementById('resultsContainer');
-    const showResultsBtn = document.getElementById('showResultsBtn'); // Thêm
+    const showResultsBtn = document.getElementById('showResultsBtn');
 
-    // Biến để theo dõi trạng thái ẩn/hiện của playersPanel
     let playersPanelVisible = true;
     let isAnyResultFullscreen = false;
     let resultsUpdateInterval;
@@ -32,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function () {
     endGameBtn.addEventListener('click', endGame);
     togglePlayersBtn.addEventListener('click', togglePlayersPanel);
     
-    // Thêm sự kiện cho nút Show đáp án
     if (showResultsBtn) {
         showResultsBtn.addEventListener('click', showResultsPanel);
     }
@@ -79,10 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.success) {
                 showNotification('🎮 Game đã bắt đầu!', 'success');
                 checkGameStatus();
-                // --- Hiệu ứng chuyển panel với transition ---
                 switchPanelWithTransition(resultsPanel, gameInterfacePanel);
-                // ----------------------------------
-                // --- Hiển thị nút Show đáp án khi game bắt đầu ---
                 if (showResultsBtn) {
                     showResultsBtn.classList.remove('hidden');
                 }
@@ -127,10 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.success) {
                 showNotification('🏁 Game đã kết thúc!', 'success');
                 checkGameStatus();
-                // --- Hiệu ứng chuyển panel với transition ---
                 switchPanelWithTransition(gameInterfacePanel, resultsPanel);
-                // ---------------------------------
-                // --- Ẩn nút Show đáp án khi game kết thúc ---
                 if (showResultsBtn) {
                     showResultsBtn.classList.add('hidden');
                 }
@@ -148,61 +140,42 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function togglePlayersPanel() {
-        // Xác định panel kết quả nào đang hiển thị
         const isGameInterfaceVisible = !gameInterfacePanel.classList.contains('hidden');
         const isResultsPanelVisible = !resultsPanel.classList.contains('hidden');
         const targetPanel = isGameInterfaceVisible ? gameInterfacePanel : (isResultsPanelVisible ? resultsPanel : null);
 
         if (playersPanelVisible) {
-            // --- Ẩn playersPanel bằng cách thêm class ---
             playersPanel.classList.add('hidden-panel');
-            
-            // Mở rộng panel kết quả để lấp đầy không gian
             if (targetPanel) {
                 targetPanel.classList.add('w-full');
             }
-            
             togglePlayersBtn.innerHTML = '👥 Hiện Người chơi';
         } else {
-            // --- Hiện playersPanel bằng cách xóa class ---
             playersPanel.classList.remove('hidden-panel');
-            
-            // Thu hẹp panel kết quả về kích thước ban đầu
             if (targetPanel) {
                 targetPanel.classList.remove('w-full');
             }
-            
             togglePlayersBtn.innerHTML = '👥 Ẩn Người chơi';
         }
         playersPanelVisible = !playersPanelVisible;
     }
 
-
-    // --- Thêm/cập nhật hàm mới để hiển thị panel kết quả với hiệu ứng ---
     function showResultsPanel(event) {
-        // --- Hiệu ứng cho nút "Show đáp án" ---
-        const button = event ? event.currentTarget : showResultsBtn; // Lấy nút được click
+        const button = event ? event.currentTarget : showResultsBtn;
         if (button) {
             const originalTransition = button.style.transition;
-            button.style.transition = 'transform 0.2s ease'; // Thêm transition nếu chưa có
-            button.style.transform = 'scale(0.95)'; // Thu nhỏ nút
+            button.style.transition = 'transform 0.2s ease';
+            button.style.transform = 'scale(0.95)';
 
-            // Sau một thời gian ngắn, mới thực hiện chuyển panel và reset nút
             setTimeout(() => {
-                button.style.transition = originalTransition; // Khôi phục transition gốc
-                button.style.transform = ''; // Reset transform
-
-                // --- Hiệu ứng chuyển panel với transition ---
+                button.style.transition = originalTransition;
+                button.style.transform = '';
                 switchPanelWithTransition(gameInterfacePanel, resultsPanel);
-                // ---------------------------------
-            }, 150); // Thời gian nên <= transition time
+            }, 150);
         } else {
-            // Nếu không có event, thực hiện ngay
             switchPanelWithTransition(gameInterfacePanel, resultsPanel);
         }
     }
-    // ----------------------------------------------
-    // ----------------------------------------------
 
     function checkGameStatus() {
         const backendUrl = getBackendUrl();
@@ -229,7 +202,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         `;
                         startGameBtn.disabled = true;
                         endGameBtn.disabled = false;
-                        // --- Hiển thị nút Show đáp án nếu game đang chạy ---
                         if (showResultsBtn) {
                             showResultsBtn.classList.remove('hidden');
                         }
@@ -242,18 +214,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         `;
                         startGameBtn.disabled = false;
                         endGameBtn.disabled = true;
-                        // --- Đảm bảo hiển thị đúng panel khi game chưa bắt đầu ---
-                        // Chỉ ẩn gameInterfacePanel và hiện lại resultsPanel nếu cần
                         if (!gameInterfacePanel.classList.contains('hidden')) {
                             gameInterfacePanel.classList.add('hidden');
                             resultsPanel.classList.remove('hidden');
                         }
-                        // --- Ẩn nút Show đáp án khi game chưa bắt đầu ---
                         if (showResultsBtn) {
                             showResultsBtn.classList.add('hidden');
                         }
-                        // playersPanel không bị thay đổi ở đây
-                        // --------------------------------------------------------
                     }
                 }
             })
@@ -363,7 +330,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             displayResults.forEach((result, index) => {
                 const resultElement = document.createElement('div');
-                // Thêm class 'clickable-result' và 'cursor-pointer' để tạo hiệu ứng
                 resultElement.className = 'result-item p-2 rounded-lg bg-gray-700 border border-gray-600 relative clickable-result cursor-pointer';
 
                 const headerHtml = `
@@ -375,9 +341,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const visualizationHtml = createVisualizationHtml(result.items);
 
-                // Không cần nút phóng to riêng nữa
-                // const expandBtnHtml = `<button class="expand-result-btn absolute top-1 right-1 text-gray-400 hover:text-white text-xs" title="Phóng to kết quả">⛶</button>`;
-
                 resultElement.innerHTML = `
                     ${headerHtml}
                     <div class="result-content">
@@ -387,20 +350,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 resultsGrid.appendChild(resultElement);
 
-                // --- Gắn sự kiện click để hiệu ứng thu nhỏ ---
+                // --- Gắn sự kiện click với hiệu ứng thu nhỏ và phóng to ---
                 resultElement.addEventListener('click', function (event) {
-                    // --- Hiệu ứng thu nhỏ khi click (giữ nguyên) ---
+                    // Ngăn chặn nếu click vào nút "Quay lại" (nếu có)
+                    if (event.target.classList.contains('fullscreen-back-btn')) {
+                        return;
+                    }
+
+                    // --- Giai đoạn 1: Hiệu ứng thu nhỏ ---
                     const originalTransition = this.style.transition;
-                    this.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    this.style.transition = 'transform 0.1s ease';
                     this.style.transform = 'scale(0.92)';
 
-                    // Sau một thời gian ngắn, mới reset transform
-                    setTimeout(() => {
+                    // Lưu ID của timeout để có thể hủy nếu cần
+                    // Sử dụng một thuộc tính duy nhất để lưu trữ timeout ID
+                    this._zoomTimeoutId = setTimeout(() => {
+                        // Reset lại style transform trước khi phóng to
                         this.style.transition = originalTransition;
                         this.style.transform = '';
-                        // Không làm gì thêm, chỉ hiệu ứng
-                    }, 300); // Thời gian chờ nên >= thời gian transition (0.3s = 300ms)
-                    // ---
+                        // Gọi hàm phóng to toàn màn hình
+                        toggleResultFullscreen(this);
+                        // Xóa ID timeout sau khi sử dụng
+                        this._zoomTimeoutId = null;
+                    }, 50); // Chờ 50ms như yêu cầu
                 });
             });
 
@@ -461,23 +433,41 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
     }
 
+    // --- Hàm toggleResultFullscreen đã được sửa lỗi ---
     function toggleResultFullscreen(resultElement) {
         const isFullscreen = resultElement.classList.contains('is-fullscreen');
 
         if (isFullscreen) {
+            // --- Đóng chế độ fullscreen ---
+            // 1. Hủy bất kỳ timeout phóng to nào còn sót lại trên phần tử này
+            if (resultElement._zoomTimeoutId) {
+                clearTimeout(resultElement._zoomTimeoutId);
+                resultElement._zoomTimeoutId = null;
+            }
+
+            // 2. Xóa class fullscreen
             resultElement.classList.remove('is-fullscreen');
+            
+            // 3. Xóa nút "Quay lại"
             const backButton = resultElement.querySelector('.fullscreen-back-btn');
             if (backButton) {
                 backButton.remove();
             }
+            
+            // 4. Cập nhật trạng thái global
             isAnyResultFullscreen = false;
-            startResultsUpdateInterval();
+            startResultsUpdateInterval(); // Bắt đầu lại cập nhật kết quả
 
         } else {
+            // --- Mở chế độ fullscreen ---
+            // 1. Cập nhật trạng thái global
             isAnyResultFullscreen = true;
-            stopResultsUpdateInterval();
+            stopResultsUpdateInterval(); // Dừng cập nhật kết quả khi đang xem fullscreen
+
+            // 2. Thêm class fullscreen
             resultElement.classList.add('is-fullscreen');
             
+            // 3. Tạo và thêm nút "Quay lại"
             const backButton = document.createElement('button');
             backButton.className = 'fullscreen-back-btn';
             backButton.textContent = '⬅️ Quay lại danh sách kết quả';
@@ -499,11 +489,14 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
             resultElement.appendChild(backButton);
 
-            backButton.addEventListener('click', function () {
-                toggleResultFullscreen(resultElement);
+            // 4. Gắn sự kiện click cho nút "Quay lại"
+            backButton.addEventListener('click', function (event) {
+                event.stopPropagation(); // Ngăn sự kiện click lan ra phần tử cha (resultElement)
+                toggleResultFullscreen(resultElement); // Gọi lại hàm để đóng
             });
         }
     }
+    // --- Hết hàm toggleResultFullscreen ---
 
     function toggleResultsFullscreen(containerElement) {
         const body = document.body;
@@ -523,6 +516,33 @@ document.addEventListener('DOMContentLoaded', function () {
                 containerElement.classList.add('is-fullscreen');
             }
         }
+    }
+
+    function switchPanelWithTransition(panelToHide, panelToShow) {
+        if (!panelToHide || !panelToShow) return;
+
+        panelToShow.classList.add('panel-transition');
+
+        panelToHide.classList.add('panel-exiting');
+
+        setTimeout(() => {
+            panelToHide.classList.add('hidden');
+            panelToHide.classList.remove('panel-exiting');
+
+            panelToShow.classList.remove('hidden');
+            panelToShow.classList.add('panel-entering');
+
+            void panelToShow.offsetWidth;
+
+            requestAnimationFrame(() => {
+                panelToShow.classList.remove('panel-entering');
+                panelToShow.classList.add('panel-entered');
+            });
+        }, 300);
+
+        setTimeout(() => {
+            panelToShow.classList.remove('panel-entered', 'panel-transition');
+        }, 600);
     }
 
     function showNotification(message, type = 'info') {
@@ -548,49 +568,9 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.hostname === '0.0.0.0') {
             return 'http://localhost:3000';
         } else {
-            // Chú ý: Có khoảng trắng thừa trong URL này trong mã gốc của bạn
             return 'https://gamedragndrop-backend.onrender.com';
         }
     }
-
-        // --- Thêm hàm tiện ích để chuyển panel với hiệu ứng ---
-    function switchPanelWithTransition(panelToHide, panelToShow) {
-        if (!panelToHide || !panelToShow) return;
-
-        // Đảm bảo panelToShow được thêm class panel-transition nếu chưa có
-        panelToShow.classList.add('panel-transition');
-
-        // 1. Đánh dấu panel ẩn sẽ bắt đầu thoát
-        panelToHide.classList.add('panel-exiting');
-
-        // 2. Sau một thời gian ngắn (phải <= thời gian transition CSS), ẩn panelToHide và chuẩn bị panelToShow
-        setTimeout(() => {
-            panelToHide.classList.add('hidden');
-            panelToHide.classList.remove('panel-exiting'); // Reset class thoát
-
-            // 3. Chuẩn bị panelToShow để vào (ẩn và đặt vị trí ban đầu)
-            panelToShow.classList.remove('hidden');
-            panelToShow.classList.add('panel-entering'); // Thêm class bắt đầu vào
-
-            // 4. Kích hoạt reflow để trình duyệt nhận class panel-entering
-            // Reflow: https://stackoverflow.com/a/24195559
-            void panelToShow.offsetWidth; // Trick force reflow
-
-            // 5. Sau một frame rất ngắn, thêm class panel-entered để kích hoạt hiệu ứng
-            requestAnimationFrame(() => {
-                panelToShow.classList.remove('panel-entering');
-                panelToShow.classList.add('panel-entered');
-            });
-        }, 300); // 300ms = thời gian transition trong CSS
-
-        // 6. Sau khi hiệu ứng hoàn tất, dọn dẹp class
-        setTimeout(() => {
-            panelToShow.classList.remove('panel-entered', 'panel-transition');
-            // Không loại bỏ panel-transition khỏi panelToShow vì có thể dùng lại
-        }, 600); // 600ms = 2 * thời gian transition
-    }
-    // ----------------------------------------------
-    
 
     loadResults();
 
