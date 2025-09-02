@@ -7,66 +7,133 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .draggable {
-            touch-action: none;
             cursor: grab;
+            user-select: none;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            transition: transform 0.2s ease, opacity 0.2s ease;
         }
-        .draggable:active {
+        .draggable.dragging {
             cursor: grabbing;
+            opacity: 0.8;
+            z-index: 1000;
+        }
+        .draggable.moving {
+            position: absolute !important;
+            pointer-events: none;
         }
         .drop-zone {
-            min-height: 100px;
+            min-height: 150px;
             border: 2px dashed #cbd5e0;
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+        .drop-zone.active {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+        .drop-zone .placeholder {
+            pointer-events: none;
+        }
+        @media (max-width: 768px) {
+            .grid-cols-1.sm\:grid-cols-2.md\:grid-cols-3.lg\:grid-cols-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 480px) {
+            .grid-cols-1.sm\:grid-cols-2.md\:grid-cols-3.lg\:grid-cols-4 {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-900 min-h-screen">
+<body class="bg-gray-900 text-white min-h-screen">
     <div class="container mx-auto px-4 py-6">
-        <div class="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700">
-            <h1 class="text-xl font-bold text-center text-white mb-4">Giao diện Kéo thả</h1>
-            <p class="text-center text-gray-300 mb-4" id="userInfo"></p>
+        <div class="bg-gray-800 rounded-lg shadow-md p-4 mb-6 border border-gray-700 flex flex-col md:flex-row justify-between items-center">
+            <p class="text-center md:text-left mb-2 md:mb-0" id="userInfo"></p>
+            <p class="text-center md:text-right text-sm" id="gameStatusInfo">Đang kiểm tra trạng thái game...</p>
         </div>
 
-        <!-- Khu vực kéo thả -->
         <div class="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700">
-            <h2 class="text-lg font-semibold text-white mb-4">Kéo các đối tượng vào khu vực bên dưới:</h2>
+            <h2 class="text-lg font-semibold text-white mb-4 text-center">Kéo các sự kiện vào cột tương ứng:</h2>
             
-            <!-- Các đối tượng có thể kéo -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                <div class="draggable bg-blue-500 text-white p-4 rounded-lg text-center font-medium" 
-                     draggable="true" data-item="item1">
-                    Đối tượng 1
+            <div id="draggablesContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6 relative">
+                <div class="draggable bg-blue-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item1">
+                    Cố tình bội ước
                 </div>
-                <div class="draggable bg-green-500 text-white p-4 rounded-lg text-center font-medium" 
-                     draggable="true" data-item="item2">
-                    Đối tượng 2
+                <div class="draggable bg-green-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item2">
+                    Gây hấn, khiêu khích, gây xung đột quân sự
                 </div>
-                <div class="draggable bg-red-500 text-white p-4 rounded-lg text-center font-medium" 
-                     draggable="true" data-item="item3">
-                    Đối tượng 3
+                <div class="draggable bg-red-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item3">
+                    Thảm sát đồng bào ở Hà Nội và một số địa phương
                 </div>
-                <div class="draggable bg-yellow-500 text-white p-4 rounded-lg text-center font-medium" 
-                     draggable="true" data-item="item4">
-                    Đối tượng 4
+                <div class="draggable bg-yellow-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item4">
+                    Chỉ thị “Toàn dân kháng chiến”
                 </div>
-                <div class="draggable bg-purple-500 text-white p-4 rounded-lg text-center font-medium" 
-                     draggable="true" data-item="item5">
-                    Đối tượng 5
+                <div class="draggable bg-purple-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item5">
+                    Chủ trương nhân nhượng, hòa hoãn
                 </div>
-                <div class="draggable bg-pink-500 text-white p-4 rounded-lg text-center font-medium" 
-                     draggable="true" data-item="item6">
-                    Đối tượng 6
+                <div class="draggable bg-pink-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item6">
+                    Đánh chiếm Hải Phòng, Lạng Sơn, Đà Nẵng, Hải Dương
+                </div>
+                <div class="draggable bg-indigo-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item7">
+                    Đưa liên tiếp ba tối hậu thư
+                </div>
+                <div class="draggable bg-teal-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item8">
+                    Đơn phương cắt đứt mọi liên hệ với chính phủ Việt Nam
+                </div>
+                <div class="draggable bg-orange-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item9">
+                    Bày tỏ thiện chí hòa bình
+                </div>
+                <div class="draggable bg-cyan-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item10">
+                    Cứu vãn mối quan hệ Việt - Pháp
+                </div>
+                <div class="draggable bg-lime-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item11">
+                    “Lời kêu gọi toàn quốc kháng chiến”
+                </div>
+                <div class="draggable bg-rose-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item12">
+                    Chiến tranh phá hoại miền Bắc
+                </div>
+                <div class="draggable bg-amber-600 text-white p-3 rounded-lg font-medium" 
+                     data-item="item13">
+                    Đất nước bị chia cắt hai miền; Quốc sách “Ấp chiến lược”
                 </div>
             </div>
 
-            <!-- Khu vực thả -->
-            <div class="drop-zone rounded-lg p-4 mb-6 bg-gray-700" id="dropZone">
-                <p class="text-gray-400 text-center">Kéo các đối tượng vào đây</p>
-                <div id="dropArea" class="min-h-32"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="flex flex-col">
+                    <h3 class="text-center font-semibold mb-2 bg-red-700 text-white p-2 rounded-t-lg">Về phía thực dân Pháp</h3>
+                    <div class="drop-zone flex-grow rounded-b-lg p-4 bg-gray-700 relative" id="dropZone1">
+                        <p class="placeholder text-gray-400 text-center italic">Kéo sự kiện vào đây</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col">
+                    <h3 class="text-center font-semibold mb-2 bg-green-700 text-white p-2 rounded-t-lg">Về phía Việt Nam</h3>
+                    <div class="drop-zone flex-grow rounded-b-lg p-4 bg-gray-700 relative" id="dropZone2">
+                        <p class="placeholder text-gray-400 text-center italic">Kéo sự kiện vào đây</p>
+                    </div>
+                </div>
             </div>
 
-            <!-- Nút submit -->
             <button id="submitBtn" 
-                    class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                    class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50">
                 Gửi kết quả
             </button>
         </div>

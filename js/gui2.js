@@ -26,14 +26,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Kiểm tra trạng thái game ban đầu
     checkGameStatus();
     
-    // Tự động cập nhật trạng thái mỗi 3 giây
-    setInterval(checkGameStatus, 3000);
-    setInterval(loadResults, 3000); // Cập nhật kết quả thường xuyên
+    // Tự động cập nhật trạng thái game mỗi 3 giây
+    const statusUpdateInterval = setInterval(checkGameStatus, 3000);
+    
+    // Tự động cập nhật kết quả và người chơi mỗi 2 giây
+    const resultsUpdateInterval = setInterval(loadResults, 2000);
 
     // Hàm bắt đầu game
     function startGame() {
         const backendUrl = getBackendUrl();
         const startUrl = `${backendUrl}/api/game/start`;
+        
+        // Disable buttons tạm thời để tránh double click
+        startGameBtn.disabled = true;
+        endGameBtn.disabled = true;
         
         fetch(startUrl, {
             method: 'POST',
@@ -42,24 +48,29 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({ user: currentUser })
         })
-        .then(response => response.json())
+        .then(response => {
+             if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.message || 'Lỗi không xác định'); });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 showNotification('🎮 Game đã bắt đầu!', 'success');
-                checkGameStatus();
-                loadResults();
-                
-                // Tự động ẩn panel người chơi khi bắt đầu game
-                if (playersPanelVisible) {
-                    togglePlayersPanel();
-                }
+                checkGameStatus(); // Cập nhật ngay lập tức trạng thái UI
+                loadResults(); // Cập nhật ngay lập tức kết quả
             } else {
                 showNotification(`❌ ${data.message}`, 'error');
             }
         })
         .catch(error => {
             console.error('Lỗi khi bắt đầu game:', error);
-            showNotification('⚠️ Không thể kết nối server!', 'error');
+            showNotification(`⚠️ ${error.message || 'Không thể kết nối server!'}`, 'error');
+        })
+        .finally(() => {
+             // Re-enable buttons
+            startGameBtn.disabled = false;
+            // endGameBtn sẽ được enable/disable bởi checkGameStatus
         });
     }
 
@@ -72,6 +83,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const backendUrl = getBackendUrl();
         const endUrl = `${backendUrl}/api/game/end`;
         
+        // Disable buttons tạm thời
+        startGameBtn.disabled = true;
+        endGameBtn.disabled = true;
+        
         fetch(endUrl, {
             method: 'POST',
             headers: {
@@ -79,19 +94,29 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({ user: currentUser })
         })
-        .then(response => response.json())
+        .then(response => {
+             if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.message || 'Lỗi không xác định'); });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 showNotification('🏁 Game đã kết thúc!', 'success');
-                checkGameStatus();
-                loadResults();
+                checkGameStatus(); // Cập nhật ngay lập tức trạng thái UI
+                loadResults(); // Cập nhật ngay lập tức kết quả
             } else {
                 showNotification(`❌ ${data.message}`, 'error');
             }
         })
         .catch(error => {
             console.error('Lỗi khi kết thúc game:', error);
-            showNotification('⚠️ Không thể kết nối server!', 'error');
+            showNotification(`⚠️ ${error.message || 'Không thể kết nối server!'}`, 'error');
+        })
+        .finally(() => {
+             // Re-enable buttons
+            endGameBtn.disabled = false;
+            // startGameBtn sẽ được enable/disable bởi checkGameStatus
         });
     }
 
@@ -123,7 +148,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const statusUrl = `${backendUrl}/api/game/status`;
         
         fetch(statusUrl)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     const session = data.session;
@@ -131,15 +161,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     if (session.isActive) {
                         statusElement.innerHTML = `
-                            <div class="text-green-400 font-medium">🎮 Game đang hoạt động</div>
-                            <div class="text-gray-300 text-sm mt-1">Bắt đầu: ${new Date(session.startTime).toLocaleString('vi-VN')}</div>
+                            <div class="text-green-400 font-medium flex justify-center items-center">
+                                <span class="mr-2">🎮</span> Game đang hoạt động
+                            </div>
+                            <div class="text-gray-300 text-sm mt-1 text-center">Bắt đầu: ${new Date(session.startTime).toLocaleString('vi-VN')}</div>
                         `;
                         startGameBtn.disabled = true;
                         endGameBtn.disabled = false;
                     } else {
                         statusElement.innerHTML = `
-                            <div class="text-yellow-400 font-medium">⏸️ Game chưa bắt đầu</div>
-                            <div class="text-gray-300 text-sm mt-1">Hãy nhấn "Bắt đầu Game" để bắt đầu</div>
+                            <div class="text-yellow-400 font-medium flex justify-center items-center">
+                                <span class="mr-2">⏸️</span> Game chưa bắt đầu
+                            </div>
+                            <div class="text-gray-300 text-sm mt-1 text-center">Hãy nhấn "Bắt đầu Game" để bắt đầu</div>
                         `;
                         startGameBtn.disabled = false;
                         endGameBtn.disabled = true;
@@ -149,7 +183,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Lỗi khi kiểm tra trạng thái game:', error);
                 document.getElementById('gameStatus').innerHTML = 
-                    '<div class="text-red-400">⚠️ Không thể kết nối server!</div>';
+                    '<div class="text-red-400 flex justify-center items-center"><span class="mr-2">⚠️</span> Không thể kết nối server!</div>';
+                // Disable buttons nếu không kết nối được
+                startGameBtn.disabled = true;
+                endGameBtn.disabled = true;
             });
     }
 
@@ -159,28 +196,45 @@ document.addEventListener('DOMContentLoaded', function() {
         const resultsUrl = `${backendUrl}/api/results`;
         const playersUrl = `${backendUrl}/api/players/connected`;
         
-        // Load kết quả
+        let resultsLoaded = false;
+        let playersLoaded = false;
+
+        // Load kết quả game
         fetch(resultsUrl)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     displayResults(data.results);
                 }
+                resultsLoaded = true;
             })
             .catch(error => {
                 console.error('Lỗi khi load kết quả:', error);
+                resultsLoaded = true; // Đánh dấu là đã thử load, tránh chờ mãi
             });
-        
+
         // Load danh sách người chơi
         fetch(playersUrl)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     updateConnectedPlayersDisplay(data.players);
                 }
+                playersLoaded = true;
             })
             .catch(error => {
                 console.error('Lỗi khi load danh sách người chơi:', error);
+                playersLoaded = true; // Đánh dấu là đã thử load, tránh chờ mãi
             });
     }
 
@@ -195,6 +249,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (players.length > 0) {
             noPlayersMessage.classList.add('hidden');
             playersList.classList.remove('hidden');
+            
+            // Sắp xếp người chơi theo tên (tùy chọn)
+            players.sort((a, b) => a.fullname.localeCompare(b.fullname));
             
             playersList.innerHTML = '';
             players.forEach(player => {
@@ -225,44 +282,102 @@ document.addEventListener('DOMContentLoaded', function() {
             noResultsMessage.classList.add('hidden');
             resultsContent.classList.remove('hidden');
             
-            // Sắp xếp theo thời gian gửi (mới nhất trước)
             results.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
             
-            // Hiển thị danh sách (giới hạn 50 kết quả để tránh lag)
-            const displayResults = results.slice(0, 50);
+            const displayResults = results.slice(0, 100);
             
             resultsList.innerHTML = '';
             displayResults.forEach((result, index) => {
                 const resultElement = document.createElement('div');
-                resultElement.className = 'p-3 rounded-lg bg-gray-700 border border-gray-600';
+                resultElement.className = 'result-item p-3 rounded-lg bg-gray-700 border border-gray-600';
+
+                let frenchItemsHtml = '';
+                let vietnamItemsHtml = '';
+                let unassignedItemsHtml = ''; // Biến mới cho unassigned
                 
-                let itemsHtml = '';
-                result.items.forEach(item => {
-                    const colors = {
-                        'item1': 'bg-blue-500',
-                        'item2': 'bg-green-500',
-                        'item3': 'bg-red-500',
-                        'item4': 'bg-yellow-500',
-                        'item5': 'bg-purple-500',
-                        'item6': 'bg-pink-500'
-                    };
-                    const colorClass = colors[item.id] || 'bg-gray-500';
-                    
-                    itemsHtml += `
-                        <span class="inline-block ${colorClass} text-white text-xs px-2 py-1 rounded mr-1 mb-1">
-                            ${item.id}
-                        </span>
-                    `;
-                });
+                // Xử lý dữ liệu items (mới có unassigned)
+                if (result.items && typeof result.items === 'object') {
+                    // Dữ liệu mới: object {french: [...], vietnam: [...], unassigned: [...]}
+                    if (result.items.french && Array.isArray(result.items.french)) {
+                        result.items.french.forEach(item => {
+                            const itemId = item.id || item;
+                            const itemText = item.text || item;
+                            const colors = {
+                                'item1': 'bg-blue-500', 'item2': 'bg-green-500', 'item3': 'bg-red-500',
+                                'item4': 'bg-yellow-500', 'item5': 'bg-purple-500', 'item6': 'bg-pink-500',
+                                'item7': 'bg-indigo-500', 'item8': 'bg-teal-500', 'item9': 'bg-orange-500',
+                                'item10': 'bg-cyan-500', 'item11': 'bg-lime-500', 'item12': 'bg-rose-500', 'item13': 'bg-amber-500'
+                            };
+                            const colorClass = colors[itemId] || 'bg-gray-500';
+                            frenchItemsHtml += `<span class="inline-block ${colorClass} text-white text-xs px-2 py-1 rounded mr-1 mb-1">${itemText}</span>`;
+                        });
+                    }
+                    if (result.items.vietnam && Array.isArray(result.items.vietnam)) {
+                        result.items.vietnam.forEach(item => {
+                            const itemId = item.id || item;
+                            const itemText = item.text || item;
+                            const colors = {
+                                'item1': 'bg-blue-500', 'item2': 'bg-green-500', 'item3': 'bg-red-500',
+                                'item4': 'bg-yellow-500', 'item5': 'bg-purple-500', 'item6': 'bg-pink-500',
+                                'item7': 'bg-indigo-500', 'item8': 'bg-teal-500', 'item9': 'bg-orange-500',
+                                'item10': 'bg-cyan-500', 'item11': 'bg-lime-500', 'item12': 'bg-rose-500', 'item13': 'bg-amber-500'
+                            };
+                            const colorClass = colors[itemId] || 'bg-gray-500';
+                            vietnamItemsHtml += `<span class="inline-block ${colorClass} text-white text-xs px-2 py-1 rounded mr-1 mb-1">${itemText}</span>`;
+                        });
+                    }
+                    // Xử lý unassigned items
+                    if (result.items.unassigned && Array.isArray(result.items.unassigned)) {
+                        result.items.unassigned.forEach(item => {
+                            const itemId = item.id || item;
+                            const itemText = item.text || item;
+                            const colors = {
+                                'item1': 'bg-blue-500', 'item2': 'bg-green-500', 'item3': 'bg-red-500',
+                                'item4': 'bg-yellow-500', 'item5': 'bg-purple-500', 'item6': 'bg-pink-500',
+                                'item7': 'bg-indigo-500', 'item8': 'bg-teal-500', 'item9': 'bg-orange-500',
+                                'item10': 'bg-cyan-500', 'item11': 'bg-lime-500', 'item12': 'bg-rose-500', 'item13': 'bg-amber-500'
+                            };
+                            const colorClass = colors[itemId] || 'bg-gray-500';
+                            unassignedItemsHtml += `<span class="inline-block ${colorClass} text-white text-xs px-2 py-1 rounded mr-1 mb-1">${itemText}</span>`;
+                        });
+                    }
+                }
+
+                // Tạo HTML cho từng phần
+                let itemsSection = '';
+                if (frenchItemsHtml) {
+                    itemsSection += `
+                        <div class="mt-2">
+                            <div class="text-xs font-semibold text-red-300 mb-1">Pháp:</div>
+                            <div>${frenchItemsHtml}</div>
+                        </div>`;
+                }
+                if (vietnamItemsHtml) {
+                    itemsSection += `
+                        <div class="mt-2">
+                            <div class="text-xs font-semibold text-green-300 mb-1">Việt Nam:</div>
+                            <div>${vietnamItemsHtml}</div>
+                        </div>`;
+                }
+                // Thêm phần hiển thị unassigned
+                if (unassignedItemsHtml) {
+                    itemsSection += `
+                        <div class="mt-2">
+                            <div class="text-xs font-semibold text-gray-300 mb-1">Chưa phân loại:</div>
+                            <div>${unassignedItemsHtml}</div>
+                        </div>`;
+                }
                 
+                if (!itemsSection) {
+                    itemsSection = '<div class="text-gray-400 text-sm mt-2">Không có sự kiện được phân loại</div>';
+                }
+
                 resultElement.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
                         <span class="font-medium text-white text-sm truncate">${result.user.fullname}</span>
                         <span class="text-xs text-gray-400 whitespace-nowrap">${new Date(result.submittedAt).toLocaleTimeString('vi-VN')}</span>
                     </div>
-                    <div class="mt-1">
-                        ${itemsHtml}
-                    </div>
+                    ${itemsSection}
                 `;
                 
                 resultsList.appendChild(resultElement);
@@ -304,10 +419,16 @@ document.addEventListener('DOMContentLoaded', function() {
         } 
         // Nếu đang chạy trên web (production)
         else {
-            return 'https://gamedragndrop-backend.onrender.com';
+            return 'https://gamedragndrop-backend.onrender.com'; // Thay bằng URL thật của bạn
         }
     }
 
     // Gọi loadResults ban đầu
     loadResults();
+
+    // Dọn dẹp intervals khi người dùng rời khỏi trang
+    window.addEventListener('beforeunload', function() {
+        clearInterval(statusUpdateInterval);
+        clearInterval(resultsUpdateInterval);
+    });
 });
