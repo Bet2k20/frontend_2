@@ -12,14 +12,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const gameStatus = document.getElementById('gameStatus');
     const playersPanel = document.getElementById('playersPanel');
     const resultsPanel = document.getElementById('resultsPanel');
-    // Element cho nút fullscreen chung
     const fullscreenToggleBtn = document.getElementById('fullscreenToggleBtn');
-    // Element cho container kết quả để fullscreen
     const resultsContainer = document.getElementById('resultsContainer');
 
     let playersPanelVisible = true;
+    let isAnyResultFullscreen = false;
+    let resultsUpdateInterval;
 
-    // Gắn sự kiện cho nút fullscreen chung
     if (fullscreenToggleBtn && resultsContainer) {
         fullscreenToggleBtn.addEventListener('click', function () {
             toggleResultsFullscreen(resultsContainer);
@@ -32,9 +31,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     checkGameStatus();
     const statusUpdateInterval = setInterval(checkGameStatus, 3000);
-    const resultsUpdateInterval = setInterval(loadResults, 2000);
+    startResultsUpdateInterval();
 
-    // Hàm bắt đầu game
+    function startResultsUpdateInterval() {
+        if (resultsUpdateInterval) {
+            clearInterval(resultsUpdateInterval);
+        }
+        resultsUpdateInterval = setInterval(loadResults, 2000);
+    }
+
+    function stopResultsUpdateInterval() {
+        if (resultsUpdateInterval) {
+            clearInterval(resultsUpdateInterval);
+            resultsUpdateInterval = null;
+        }
+    }
+
     function startGame() {
         const backendUrl = getBackendUrl();
         const startUrl = `${backendUrl}/api/game/start`;
@@ -68,11 +80,10 @@ document.addEventListener('DOMContentLoaded', function () {
             showNotification(`⚠️ ${error.message || 'Không thể kết nối server!'}`, 'error');
         })
         .finally(() => {
-            // startGameBtn sẽ được enable/disable bởi checkGameStatus
+            startGameBtn.disabled = false;
         });
     }
 
-    // Hàm kết thúc game
     function endGame() {
         if (!confirm('Bạn có chắc chắn muốn kết thúc game?')) {
             return;
@@ -110,11 +121,10 @@ document.addEventListener('DOMContentLoaded', function () {
             showNotification(`⚠️ ${error.message || 'Không thể kết nối server!'}`, 'error');
         })
         .finally(() => {
-            // endGameBtn sẽ được enable/disable bởi checkGameStatus
+            endGameBtn.disabled = false;
         });
     }
 
-    // Hàm ẩn/hiện panel người chơi
     function togglePlayersPanel() {
         if (playersPanelVisible) {
             playersPanel.style.width = '0';
@@ -134,7 +144,6 @@ document.addEventListener('DOMContentLoaded', function () {
         playersPanelVisible = !playersPanelVisible;
     }
 
-    // Hàm kiểm tra trạng thái game
     function checkGameStatus() {
         const backendUrl = getBackendUrl();
         const statusUrl = `${backendUrl}/api/game/status`;
@@ -181,13 +190,16 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // Hàm load kết quả và cập nhật người chơi
     function loadResults() {
+        if (isAnyResultFullscreen) {
+            console.log("Có kết quả đang fullscreen, tạm dừng cập nhật.");
+            return;
+        }
+
         const backendUrl = getBackendUrl();
         const resultsUrl = `${backendUrl}/api/results`;
         const playersUrl = `${backendUrl}/api/players/connected`;
 
-        // Load kết quả game
         fetch(resultsUrl)
             .then(response => {
                 if (!response.ok) {
@@ -204,7 +216,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Lỗi khi load kết quả:', error);
             });
 
-        // Load danh sách người chơi
         fetch(playersUrl)
             .then(response => {
                 if (!response.ok) {
@@ -222,7 +233,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // Hàm cập nhật hiển thị người chơi
     function updateConnectedPlayersDisplay(players) {
         const playersList = document.getElementById('playersList');
         const noPlayersMessage = document.getElementById('noPlayersMessage');
@@ -252,8 +262,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Hàm hiển thị kết quả trong grid 5x4 cố định
     function displayResults(results) {
+        if (isAnyResultFullscreen) {
+             console.log("Bỏ qua displayResults do có kết quả đang fullscreen.");
+            return;
+        }
+
         const noResultsMessage = document.getElementById('noResultsMessage');
         const resultsContent = document.getElementById('resultsContent');
         const playerCount = document.getElementById('playerCount');
@@ -265,97 +279,17 @@ document.addEventListener('DOMContentLoaded', function () {
             noResultsMessage.classList.add('hidden');
             resultsContent.classList.remove('hidden');
 
-            // Sắp xếp theo thời gian gửi (mới nhất trước)
             results.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 
-            // Giới hạn số lượng kết quả hiển thị (tối đa 20)
             const displayResults = results.slice(0, 20);
 
-            resultsGrid.innerHTML = ''; // Xóa nội dung cũ
+            resultsGrid.innerHTML = '';
 
             displayResults.forEach((result, index) => {
                 const resultElement = document.createElement('div');
-                resultElement.className = 'result-item p-2 rounded-lg bg-gray-700 border border-gray-600';
+                // Thêm class 'clickable-result' và 'cursor-pointer' để tạo hiệu ứng
+                resultElement.className = 'result-item p-2 rounded-lg bg-gray-700 border border-gray-600 relative clickable-result cursor-pointer';
 
-                let frenchItemsHtml = '';
-                let vietnamItemsHtml = '';
-                let unassignedItemsHtml = '';
-
-                // Xử lý dữ liệu items
-                if (result.items && typeof result.items === 'object') {
-                    if (result.items.french && Array.isArray(result.items.french)) {
-                        result.items.french.forEach(item => {
-                            const itemId = item.id || item;
-                            const itemText = item.text || item;
-                            const colors = {
-                                'item1': 'bg-blue-500', 'item2': 'bg-green-500', 'item3': 'bg-red-500',
-                                'item4': 'bg-yellow-500', 'item5': 'bg-purple-500', 'item6': 'bg-pink-500',
-                                'item7': 'bg-indigo-500', 'item8': 'bg-teal-500', 'item9': 'bg-orange-500',
-                                'item10': 'bg-cyan-500', 'item11': 'bg-lime-500', 'item12': 'bg-rose-500', 'item13': 'bg-amber-500'
-                            };
-                            const colorClass = colors[itemId] || 'bg-gray-500';
-                            frenchItemsHtml += `<span class="inline-block ${colorClass} text-white text-xs px-1 py-0.5 rounded mr-1 mb-1">${itemText}</span>`;
-                        });
-                    }
-                    if (result.items.vietnam && Array.isArray(result.items.vietnam)) {
-                        result.items.vietnam.forEach(item => {
-                            const itemId = item.id || item;
-                            const itemText = item.text || item;
-                            const colors = {
-                                'item1': 'bg-blue-500', 'item2': 'bg-green-500', 'item3': 'bg-red-500',
-                                'item4': 'bg-yellow-500', 'item5': 'bg-purple-500', 'item6': 'bg-pink-500',
-                                'item7': 'bg-indigo-500', 'item8': 'bg-teal-500', 'item9': 'bg-orange-500',
-                                'item10': 'bg-cyan-500', 'item11': 'bg-lime-500', 'item12': 'bg-rose-500', 'item13': 'bg-amber-500'
-                            };
-                            const colorClass = colors[itemId] || 'bg-gray-500';
-                            vietnamItemsHtml += `<span class="inline-block ${colorClass} text-white text-xs px-1 py-0.5 rounded mr-1 mb-1">${itemText}</span>`;
-                        });
-                    }
-                    if (result.items.unassigned && Array.isArray(result.items.unassigned)) {
-                        result.items.unassigned.forEach(item => {
-                            const itemId = item.id || item;
-                            const itemText = item.text || item;
-                            const colors = {
-                                'item1': 'bg-blue-500', 'item2': 'bg-green-500', 'item3': 'bg-red-500',
-                                'item4': 'bg-yellow-500', 'item5': 'bg-purple-500', 'item6': 'bg-pink-500',
-                                'item7': 'bg-indigo-500', 'item8': 'bg-teal-500', 'item9': 'bg-orange-500',
-                                'item10': 'bg-cyan-500', 'item11': 'bg-lime-500', 'item12': 'bg-rose-500', 'item13': 'bg-amber-500'
-                            };
-                            const colorClass = colors[itemId] || 'bg-gray-500';
-                            unassignedItemsHtml += `<span class="inline-block ${colorClass} text-white text-xs px-1 py-0.5 rounded mr-1 mb-1">${itemText}</span>`;
-                        });
-                    }
-                }
-
-                // Tạo HTML cho từng phần
-                let itemsSection = '';
-                if (frenchItemsHtml) {
-                    itemsSection += `
-                        <div class="mt-1">
-                            <div class="text-xs font-semibold text-red-300 mb-0.5">Pháp:</div>
-                            <div>${frenchItemsHtml}</div>
-                        </div>`;
-                }
-                if (vietnamItemsHtml) {
-                    itemsSection += `
-                        <div class="mt-1">
-                            <div class="text-xs font-semibold text-green-300 mb-0.5">Việt Nam:</div>
-                            <div>${vietnamItemsHtml}</div>
-                        </div>`;
-                }
-                if (unassignedItemsHtml) {
-                    itemsSection += `
-                        <div class="mt-1">
-                            <div class="text-xs font-semibold text-gray-300 mb-0.5">Chưa phân loại:</div>
-                            <div>${unassignedItemsHtml}</div>
-                        </div>`;
-                }
-
-                if (!itemsSection) {
-                    itemsSection = '<div class="text-gray-400 text-xs mt-1">Không có sự kiện</div>';
-                }
-
-                // Tạo tiêu đề cho ô kết quả
                 const headerHtml = `
                     <div class="flex justify-between items-start mb-1 flex-shrink-0">
                         <span class="font-medium text-white text-xs truncate">${result.user.fullname}</span>
@@ -363,22 +297,49 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                 `;
 
+                const visualizationHtml = createVisualizationHtml(result.items);
+
+                // Không cần nút phóng to riêng nữa
+                // const expandBtnHtml = `<button class="expand-result-btn absolute top-1 right-1 text-gray-400 hover:text-white text-xs" title="Phóng to kết quả">⛶</button>`;
+
                 resultElement.innerHTML = `
                     ${headerHtml}
                     <div class="result-content">
-                        ${itemsSection}
+                        ${visualizationHtml}
                     </div>
                 `;
 
                 resultsGrid.appendChild(resultElement);
+
+                // Gắn sự kiện click cho toàn bộ ô kết quả - ĐÃ CẬP NHẬT
+                resultElement.addEventListener('click', function (event) {
+                    // Kiểm tra xem click có phải trên nút "Quay lại" không
+                    if (event.target.classList.contains('fullscreen-back-btn')) {
+                        return;
+                    }
+
+                    // --- Thêm hiệu ứng thu phóng khi click ---
+                    const originalTransition = this.style.transition; // Lưu transition gốc
+                    this.style.transition = 'transform 0.2s ease'; // Đặt transition cho transform
+                    this.style.transform = 'scale(0.95)'; // Thu nhỏ nhẹ khi click
+
+                    // Sau một thời gian ngắn, mới thực hiện fullscreen và reset transform
+                    setTimeout(() => {
+                        this.style.transition = originalTransition; // Khôi phục transition gốc
+                        this.style.transform = ''; // Reset transform
+                        toggleResultFullscreen(resultElement); // Gọi hàm fullscreen
+                    }, 150); // Thời gian ngắn để hiệu ứng hiện rõ
+                    // ---
+                });
             });
 
-            // Nếu số kết quả ít hơn 20, thêm các ô trống để giữ cấu trúc grid
             const emptySlots = 20 - displayResults.length;
             for (let i = 0; i < emptySlots; i++) {
                 const emptySlot = document.createElement('div');
-                emptySlot.className = 'result-item p-2 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center';
-                emptySlot.innerHTML = `<span class="text-gray-600 text-xs">Trống</span>`;
+                emptySlot.className = 'result-item p-2 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center relative';
+                emptySlot.innerHTML = `
+                    <span class="text-gray-600 text-xs">Trống</span>
+                `;
                 resultsGrid.appendChild(emptySlot);
             }
 
@@ -388,32 +349,111 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Hàm toggle fullscreen cho phần container kết quả
+    function createVisualizationHtml(itemsData) {
+        const frenchItems = itemsData.french || [];
+        const vietnamItems = itemsData.vietnam || [];
+        const unassignedItems = itemsData.unassigned || [];
+
+        function createItemsHtml(items, sectionClass) {
+            if (!items.length) return '';
+            return items.map(item => {
+                const itemId = item.id || item;
+                const itemText = item.text || item;
+                const shortLabel = itemId.replace('item', '');
+                const colors = {
+                    'item1': 'bg-blue-500', 'item2': 'bg-green-500', 'item3': 'bg-red-500',
+                    'item4': 'bg-yellow-500', 'item5': 'bg-purple-500', 'item6': 'bg-pink-500',
+                    'item7': 'bg-indigo-500', 'item8': 'bg-teal-500', 'item9': 'bg-orange-500',
+                    'item10': 'bg-cyan-500', 'item11': 'bg-lime-500', 'item12': 'bg-rose-500', 'item13': 'bg-amber-500'
+                };
+                const colorClass = colors[itemId] || 'bg-gray-500';
+                return `<span class="viz-item ${colorClass}" title="${itemText}">${shortLabel}</span>`;
+            }).join('');
+        }
+
+        const frenchItemsHtml = createItemsHtml(frenchItems, 'french');
+        const vietnamItemsHtml = createItemsHtml(vietnamItems, 'vietnam');
+        const unassignedItemsHtml = createItemsHtml(unassignedItems, 'unassigned');
+
+        return `
+            <div class="visualization-container">
+                <div class="viz-section french">
+                    ${frenchItemsHtml}
+                </div>
+                <div class="viz-section vietnam">
+                    ${vietnamItemsHtml}
+                </div>
+                <div class="viz-section unassigned">
+                    ${unassignedItemsHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    function toggleResultFullscreen(resultElement) {
+        const isFullscreen = resultElement.classList.contains('is-fullscreen');
+
+        if (isFullscreen) {
+            resultElement.classList.remove('is-fullscreen');
+            const backButton = resultElement.querySelector('.fullscreen-back-btn');
+            if (backButton) {
+                backButton.remove();
+            }
+            isAnyResultFullscreen = false;
+            startResultsUpdateInterval();
+
+        } else {
+            isAnyResultFullscreen = true;
+            stopResultsUpdateInterval();
+            resultElement.classList.add('is-fullscreen');
+
+            const backButton = document.createElement('button');
+            backButton.className = 'fullscreen-back-btn';
+            backButton.textContent = '⬅️ Quay lại danh sách kết quả';
+            backButton.title = 'Quay lại danh sách kết quả';
+
+            backButton.style.cssText = `
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: rgba(239, 68, 68, 0.8);
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 8px 16px;
+                cursor: pointer;
+                font-size: 1rem;
+                z-index: 10002;
+            `;
+            resultElement.appendChild(backButton);
+
+            backButton.addEventListener('click', function () {
+                toggleResultFullscreen(resultElement);
+            });
+        }
+    }
+
     function toggleResultsFullscreen(containerElement) {
         const body = document.body;
 
         if (screenfull.isEnabled) {
-            // Sử dụng thư viện screenfull nếu có
             if (screenfull.isFullscreen && screenfull.element === containerElement) {
                 screenfull.exit();
             } else {
                 screenfull.request(containerElement);
             }
         } else {
-            // Fallback nếu trình duyệt không hỗ trợ screenfull
             if (containerElement.classList.contains('is-fullscreen')) {
-                // Thoát fullscreen
                 containerElement.classList.remove('is-fullscreen');
                 body.classList.remove('results-fullscreen-active');
             } else {
-                // Vào fullscreen
                 body.classList.add('results-fullscreen-active');
                 containerElement.classList.add('is-fullscreen');
             }
         }
     }
 
-    // Hàm hiển thị thông báo
     function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md ${
@@ -431,23 +471,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3000);
     }
 
-    // Hàm xác định URL backend dựa trên môi trường
     function getBackendUrl() {
         if (window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1' ||
             window.location.hostname === '0.0.0.0') {
             return 'http://localhost:3000';
         } else {
-            return 'https://gamedragndrop-backend.onrender.com'; // Thay bằng URL thật của bạn
+            // Chú ý: Có khoảng trắng thừa trong URL này trong mã gốc của bạn
+            return 'https://gamedragndrop-backend.onrender.com';
         }
     }
 
-    // Gọi loadResults ban đầu
     loadResults();
 
-    // Dọn dẹp intervals khi người dùng rời khỏi trang
     window.addEventListener('beforeunload', function () {
         clearInterval(statusUpdateInterval);
-        clearInterval(resultsUpdateInterval);
+        stopResultsUpdateInterval();
     });
 });

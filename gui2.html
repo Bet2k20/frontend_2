@@ -33,53 +33,89 @@
             flex-direction: column;
             height: 100%; /* Chiếm toàn bộ ô grid */
         }
-        .result-item:hover {
-            background-color: #4b5563;
+        /* Hiệu ứng hover cho ô có thể click - ĐÃ CẬP NHẬT VỚI SCALE */
+        .result-item.clickable-result {
+            /* Thêm transition cho transform để mượt mà hơn */
+            transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .result-item.clickable-result:hover {
+            cursor: pointer;
+            /* Bóng mạnh hơn một chút để tạo hiệu ứng nổi */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            /* Màu nền khi hover */
+            /* background-color: #4b5563; */
+            /* Thêm hiệu ứng thu phóng nhẹ */
+            transform: scale(1.03);
         }
         /* Style cho grid kết quả - CỐ ĐỊNH 5x4 - KÍCH THƯỚC BẰNG NHAU */
         #resultsGrid {
             display: grid;
-            /* Chia đều container thành 5 cột bằng nhau */
             grid-template-columns: repeat(5, 1fr);
-            /* Chia đều container thành 4 hàng bằng nhau */
             grid-template-rows: repeat(4, 1fr);
-            /* Hoặc dùng grid-auto-rows: 1fr; nếu muốn các hàng tự động có chiều cao bằng nhau */
-            /* grid-auto-rows: 1fr; */
-            gap: 0.75rem; /* Khoảng cách giữa các ô */
-            height: calc(100% - 40px); /* Trừ chiều cao của tiêu đề */
-            /* Đảm bảo grid không bị co lại nếu nội dung ít */
-            min-height: 0; /* Cho phép hàng co lại để vừa với không gian */
+            gap: 0.75rem;
+            height: calc(100% - 40px);
+            min-height: 0;
         }
-
-        /* Đảm bảo các ô trong grid có chiều cao đầy đủ */
         #resultsGrid .result-item {
-            /* Chiếm toàn bộ không gian được phân bổ bởi grid */
             height: 100%;
-            min-height: 0; /* Cho phép nội dung cuộn nếu vượt quá */
+            min-height: 0;
             display: flex;
             flex-direction: column;
         }
-
-        /* Style cho nội dung trong từng ô */
         .result-content {
             flex-grow: 1;
-            overflow-y: auto; /* Cuộn dọc nếu nội dung dài */
-            padding-right: 0.25rem; /* Một chút padding cho thanh cuộn */
+            overflow: hidden;
+            padding: 0.25rem;
         }
-        /* Style cho nút fullscreen CHUNG */
+        .visualization-container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            gap: 0.25rem;
+        }
+        .viz-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            overflow: hidden;
+            border-radius: 0.25rem;
+        }
+        .viz-section.french {
+            flex: 0 0 40%;
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+        .viz-section.vietnam {
+            flex: 0 0 40%;
+            background-color: rgba(34, 197, 94, 0.1);
+        }
+        .viz-section.unassigned {
+            flex: 0 0 20%;
+            background-color: rgba(156, 163, 175, 0.1);
+        }
+        .viz-item {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.2rem;
+            margin: 0.1rem;
+            border-radius: 0.15rem;
+            color: white;
+            text-align: center;
+            min-width: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         #fullscreenToggleBtn {
-            background-color: rgba(55, 65, 81, 0.7); /* bg-gray-700 với opacity */
+            background-color: rgba(55, 65, 81, 0.7);
             color: white;
             border: none;
             border-radius: 4px;
             padding: 2px 6px;
             cursor: pointer;
-            font-size: 0.75rem; /* text-xs */
+            font-size: 0.75rem;
         }
         #fullscreenToggleBtn:hover {
-            background-color: rgba(31, 41, 55, 0.9); /* bg-gray-800 với opacity */
+            background-color: rgba(31, 41, 55, 0.9);
         }
-        /* Khi phần results container fullscreen */
         #resultsContainer.is-fullscreen {
             position: fixed;
             top: 0;
@@ -87,30 +123,59 @@
             width: 100vw;
             height: 100vh;
             z-index: 10000;
-            background-color: #1f2937; /* bg-gray-800 */
+            background-color: #1f2937;
             padding: 1rem;
         }
-         /* Ẩn các phần tử khác khi results container fullscreen */
         .results-fullscreen-active .control-panel,
         .results-fullscreen-active .game-status,
         .results-fullscreen-active #playersPanel {
             display: none !important;
         }
         .results-fullscreen-active #resultsPanel {
-            flex: 1; /* Chiếm toàn bộ không gian còn lại */
+            flex: 1;
         }
+
+        /* --- CSS CHO FULLSCREEN TỪNG KẾT QUẢ --- */
+        .result-item.is-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10001;
+            background-color: #1f2937;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            border: none;
+            border-radius: 0;
+        }
+        .result-item.is-fullscreen .result-content {
+            flex-grow: 1;
+        }
+        /* Style cho nút Back khi result-item fullscreen - ĐÃ ĐƯỢC ÁP INLINE TRONG JS */
+        /*
+        .fullscreen-back-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            ...
+        }
+        .fullscreen-back-btn:hover {
+            ...
+        }
+        */
     </style>
 </head>
 <body class="bg-gray-900 text-white">
     <div class="game-container">
         <div class="bg-gray-800 h-full border border-gray-700 overflow-hidden flex flex-col">
-            <!-- Header -->
             <div class="p-4 border-b border-gray-700 control-panel">
                 <h1 class="text-2xl font-bold text-center">🎮 Quản lý Game Kéo thả</h1>
                 <p class="text-center text-gray-300 mt-1" id="userInfo"></p>
             </div>
 
-            <!-- Control Panel -->
             <div class="p-4 border-b border-gray-700 control-panel">
                 <div class="flex flex-col sm:flex-row gap-3">
                     <button id="startGameBtn"
@@ -128,17 +193,14 @@
                 </div>
             </div>
 
-            <!-- Game Status -->
             <div class="p-4 border-b border-gray-700 game-status">
                 <div id="gameStatus" class="text-center p-3 rounded-lg bg-gray-700">
                     <p class="text-gray-300">Đang kiểm tra trạng thái game...</p>
                 </div>
             </div>
 
-            <!-- Main Content Area -->
             <div class="flex-1 flex overflow-hidden">
                 <div id="resultsPanel" class="flex-1 h-full flex flex-col">
-                    <!-- Tiêu đề Kết quả Game và Nút Fullscreen -->
                     <div class="p-3 border-b border-gray-700 flex justify-between items-center">
                         <h2 class="text-lg font-semibold">📊 Kết quả Game</h2>
                         <div class="flex items-center space-x-4">
@@ -148,13 +210,11 @@
                     </div>
 
                     <div class="flex-1 overflow-hidden">
-                        <!-- Container cho grid kết quả -->
                         <div id="resultsContainer" class="h-full overflow-y-auto no-scrollbar p-3">
                             <div id="noResultsMessage" class="text-center text-gray-400 h-full flex items-center justify-center">
                                 <p>Chưa có kết quả. Hãy bắt đầu game!</p>
                             </div>
                             <div id="resultsContent" class="hidden h-full">
-                                <!-- Grid hiển thị kết quả 5x4 CỐ ĐỊNH -->
                                 <div id="resultsGrid"></div>
                             </div>
                         </div>
