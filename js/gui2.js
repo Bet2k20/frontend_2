@@ -332,14 +332,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 const resultElement = document.createElement('div');
                 resultElement.className = 'result-item p-2 rounded-lg bg-gray-700 border border-gray-600 relative clickable-result cursor-pointer';
 
+                // --- Cập nhật phần headerHtml để tên user lớn hơn và căn giữa khi fullscreen ---
+                // Trong chế độ lưới nhỏ, tên vẫn hiển thị nhỏ và căn trái
                 const headerHtml = `
                     <div class="flex justify-between items-start mb-1 flex-shrink-0">
                         <span class="font-medium text-white text-xs truncate">${result.user.fullname}</span>
                         <span class="text-xs text-gray-400 whitespace-nowrap">${new Date(result.submittedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
+                    <!-- Phần hiển thị tên người dùng khi fullscreen sẽ được thêm bằng JS -->
                 `;
 
-                const visualizationHtml = createVisualizationHtml(result.items);
+                // --- Gọi với isFullscreen = false để hiển thị số ---
+                const visualizationHtml = createVisualizationHtml(result.items, false);
 
                 resultElement.innerHTML = `
                     ${headerHtml}
@@ -348,9 +352,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                 `;
 
+                // --- Lưu dữ liệu vào phần tử DOM để dùng khi fullscreen ---
+                resultElement._resultData = result;
+
                 resultsGrid.appendChild(resultElement);
 
-                // --- Gắn sự kiện click với hiệu ứng thu nhỏ và phóng to ---
+                // --- Gắn sự kiện click để phóng to toàn màn hình với hiệu ứng 2 giai đoạn ---
                 resultElement.addEventListener('click', function (event) {
                     // Ngăn chặn nếu click vào nút "Quay lại" (nếu có)
                     if (event.target.classList.contains('fullscreen-back-btn')) {
@@ -363,7 +370,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     this.style.transform = 'scale(0.92)';
 
                     // Lưu ID của timeout để có thể hủy nếu cần
-                    // Sử dụng một thuộc tính duy nhất để lưu trữ timeout ID
                     this._zoomTimeoutId = setTimeout(() => {
                         // Reset lại style transform trước khi phóng to
                         this.style.transition = originalTransition;
@@ -392,7 +398,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function createVisualizationHtml(itemsData) {
+    // --- Hàm createVisualizationHtml đã được cập nhật ---
+    function createVisualizationHtml(itemsData, isFullscreen = false) {
         const frenchItems = itemsData.french || [];
         const vietnamItems = itemsData.vietnam || [];
         const unassignedItems = itemsData.unassigned || [];
@@ -402,7 +409,18 @@ document.addEventListener('DOMContentLoaded', function () {
             return items.map(item => {
                 const itemId = item.id || item;
                 const itemText = item.text || item;
-                const shortLabel = itemId.replace('item', '');
+                
+                // --- Tạo nhãn hiển thị ---
+                let displayLabel;
+                if (isFullscreen) {
+                    // Nếu đang ở chế độ fullscreen, hiển thị nội dung đầy đủ
+                    displayLabel = itemText;
+                } else {
+                    // Nếu đang ở chế độ lưới nhỏ, hiển thị số (shortLabel)
+                    const shortLabel = itemId.replace('item', '');
+                    displayLabel = shortLabel;
+                }
+
                 const colors = {
                     'item1': 'bg-blue-500', 'item2': 'bg-green-500', 'item3': 'bg-red-500',
                     'item4': 'bg-yellow-500', 'item5': 'bg-purple-500', 'item6': 'bg-pink-500',
@@ -410,7 +428,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     'item10': 'bg-cyan-500', 'item11': 'bg-lime-500', 'item12': 'bg-rose-500', 'item13': 'bg-amber-500'
                 };
                 const colorClass = colors[itemId] || 'bg-gray-500';
-                return `<span class="viz-item ${colorClass}" title="${itemText}">${shortLabel}</span>`;
+
+                if (isFullscreen) {
+                    // --- Style cho chế độ fullscreen ---
+                    return `<span class="viz-item ${colorClass}" title="${itemText}">${displayLabel}</span>`;
+                } else {
+                    // --- Style cho chế độ lưới nhỏ (giữ nguyên) ---
+                    return `<span class="viz-item ${colorClass}" title="${itemText}">${displayLabel}</span>`;
+                }
             }).join('');
         }
 
@@ -432,8 +457,9 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
     }
+    // --- Hết hàm createVisualizationHtml ---
 
-    // --- Hàm toggleResultFullscreen đã được sửa lỗi ---
+    // --- Hàm toggleResultFullscreen đã được sửa lỗi và thêm tiêu đề ---
     function toggleResultFullscreen(resultElement) {
         const isFullscreen = resultElement.classList.contains('is-fullscreen');
 
@@ -445,58 +471,88 @@ document.addEventListener('DOMContentLoaded', function () {
                 resultElement._zoomTimeoutId = null;
             }
 
-            // 2. Xóa class fullscreen
             resultElement.classList.remove('is-fullscreen');
-            
-            // 3. Xóa nút "Quay lại"
             const backButton = resultElement.querySelector('.fullscreen-back-btn');
             if (backButton) {
                 backButton.remove();
             }
+            // Xóa phần tên người dùng fullscreen nếu có
+            const fullscreenUserElement = resultElement.querySelector('.result-user-fullscreen');
+            if (fullscreenUserElement) {
+                fullscreenUserElement.remove();
+            }
+            // Xóa phần tiêu đề nếu có
+            const headerTitlesContainer = resultElement.querySelector('.flex.justify-between.text-center.text-lg.font-semibold');
+            if (headerTitlesContainer) {
+                headerTitlesContainer.remove();
+            }
             
-            // 4. Cập nhật trạng thái global
             isAnyResultFullscreen = false;
-            startResultsUpdateInterval(); // Bắt đầu lại cập nhật kết quả
+            startResultsUpdateInterval();
 
         } else {
             // --- Mở chế độ fullscreen ---
-            // 1. Cập nhật trạng thái global
             isAnyResultFullscreen = true;
-            stopResultsUpdateInterval(); // Dừng cập nhật kết quả khi đang xem fullscreen
+            stopResultsUpdateInterval();
 
-            // 2. Thêm class fullscreen
             resultElement.classList.add('is-fullscreen');
             
-            // 3. Tạo và thêm nút "Quay lại"
+            // --- Thêm tên người dùng lớn và căn giữa ---
+            if (resultElement._resultData) {
+                const userFullName = resultElement._resultData.user.fullname;
+                const timeSubmitted = new Date(resultElement._resultData.submittedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                
+                const userHeaderFullscreen = document.createElement('div');
+                userHeaderFullscreen.className = 'result-user-fullscreen';
+                userHeaderFullscreen.textContent = `${userFullName} (${timeSubmitted})`;
+                // Chèn vào đầu phần tử result-content
+                const resultContent = resultElement.querySelector('.result-content');
+                resultContent.parentNode.insertBefore(userHeaderFullscreen, resultContent);
+            }
+
+            // --- Thêm tiêu đề cho các phần trong chế độ fullscreen ---
+            const headerTitlesContainer = document.createElement('div');
+            headerTitlesContainer.className = 'flex justify-between text-center text-lg font-semibold mb-2 mt-2'; // mb-2 để tạo khoảng cách dưới
+            headerTitlesContainer.innerHTML = `
+                <div class="w-2/5 text-red-500">Về phía thực dân Pháp</div>
+                <div class="w-2/5 text-green-500">Về phía Việt Nam</div>
+                <div class="w-1/5 text-gray-400">Chưa được chọn</div>
+            `;
+            // Chèn tiêu đề ngay sau tên người dùng
+            const userHeaderFullscreen = resultElement.querySelector('.result-user-fullscreen');
+            if (userHeaderFullscreen) {
+                userHeaderFullscreen.parentNode.insertBefore(headerTitlesContainer, userHeaderFullscreen.nextSibling);
+            } else {
+                // Nếu không có tên người dùng, chèn vào đầu result-content
+                const resultContent = resultElement.querySelector('.result-content');
+                resultContent.parentNode.insertBefore(headerTitlesContainer, resultContent);
+            }
+            // --- Hết thêm tiêu đề ---
+
+            // --- Cập nhật lại phần hiển thị trực quan với nội dung đầy đủ ---
+            if (resultElement._resultData) {
+                const fullscreenVisualizationHtml = createVisualizationHtml(resultElement._resultData.items, true);
+                const vizContainer = resultElement.querySelector('.result-content .visualization-container');
+                if (vizContainer) {
+                    vizContainer.outerHTML = fullscreenVisualizationHtml;
+                }
+            }
+
             const backButton = document.createElement('button');
             backButton.className = 'fullscreen-back-btn';
             backButton.textContent = '⬅️ Quay lại danh sách kết quả';
             backButton.title = 'Quay lại danh sách kết quả';
             
-            backButton.style.cssText = `
-                position: absolute;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background-color: rgba(239, 68, 68, 0.8);
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 8px 16px;
-                cursor: pointer;
-                font-size: 1rem;
-                z-index: 10002;
-            `;
             resultElement.appendChild(backButton);
 
-            // 4. Gắn sự kiện click cho nút "Quay lại"
             backButton.addEventListener('click', function (event) {
-                event.stopPropagation(); // Ngăn sự kiện click lan ra phần tử cha (resultElement)
+                event.stopPropagation(); // Ngăn sự kiện click lan ra phần tử cha
                 toggleResultFullscreen(resultElement); // Gọi lại hàm để đóng
             });
         }
     }
     // --- Hết hàm toggleResultFullscreen ---
+
 
     function toggleResultsFullscreen(containerElement) {
         const body = document.body;

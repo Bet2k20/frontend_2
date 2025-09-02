@@ -72,27 +72,43 @@
             width: 100%;
             gap: 0.25rem;
         }
+        
         .viz-section {
             display: flex;
             flex-wrap: wrap;
             align-content: flex-start;
             overflow: hidden;
             border-radius: 0.25rem;
+            /* --- Thêm border đứt nét --- */
+            border: 1px dashed; /* Màu sẽ được định nghĩa riêng cho từng phần */
+            /* -------------------------- */
+            /* Thêm padding nhỏ để các item không sát viền */
+            padding: 0.25rem;
         }
         .viz-section.french {
             flex: 0 0 40%;
             background-color: rgba(239, 68, 68, 0.1);
+            /* --- Định nghĩa màu border cho Pháp --- */
+            border-color: #fecaca; /* red-200, hoặc màu khác nếu muốn */
+            /* ------------------------------------- */
         }
         .viz-section.vietnam {
             flex: 0 0 40%;
             background-color: rgba(34, 197, 94, 0.1);
+            /* --- Định nghĩa màu border cho Việt Nam --- */
+            border-color: #bbf7d0; /* green-200, hoặc màu khác nếu muốn */
+            /* ----------------------------------------- */
         }
         .viz-section.unassigned {
             flex: 0 0 20%;
             background-color: rgba(156, 163, 175, 0.1);
+            /* --- Định nghĩa màu border cho Chưa chọn --- */
+            border-color: #e5e7eb; /* gray-200, hoặc màu khác nếu muốn */
+            /* ------------------------------------------ */
         }
+        /* --- Style cho các ô item trong lưới nhỏ --- */
         .viz-item {
-            font-size: 0.6rem;
+            font-size: 0.6rem; /* Giữ nguyên kích thước nhỏ cho lưới */
             padding: 0.1rem 0.2rem;
             margin: 0.1rem;
             border-radius: 0.15rem;
@@ -102,6 +118,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        /* --- Style cho các ô item trong chế độ fullscreen --- */
+        .result-item.is-fullscreen .viz-item {
+            font-size: 0.75rem; /* Tăng kích thước chữ khi fullscreen */
+            padding: 0.25rem 0.5rem;
+            margin: 0.25rem;
+            min-width: 2.5rem; /* Tăng kích thước tối thiểu */
+            min-height: 2rem; /* Tăng chiều cao tối thiểu */
         }
         #fullscreenToggleBtn {
             background-color: rgba(55, 65, 81, 0.7);
@@ -152,19 +176,93 @@
         .result-item.is-fullscreen .result-content {
             flex-grow: 1;
         }
-        /* Style cho nút Back khi result-item fullscreen - ĐÃ ĐƯỢC ÁP INLINE TRONG JS */
-        /*
+        /* Style cho tên người dùng khi fullscreen */
+        .result-item.is-fullscreen .result-user-fullscreen {
+            font-size: 1.5rem; /* Tăng kích thước chữ */
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+                /* --- CSS cho tiêu đề trong chế độ fullscreen --- */
+        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 {
+            /* Có thể điều chỉnh khoảng cách trên dưới nếu cần */
+            margin-top: 1rem;
+            /* margin-bottom: 0.5rem; */
+        }
+
+        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div {
+            /* --- Áp dụng các class Tailwind bạn yêu cầu --- */
+            /* text-center */
+            text-align: center;
+            /* text-3xl */
+            font-size: 1.875rem; /* 30px */
+            line-height: 2.25rem; /* 36px - thường đi kèm với text-3xl */
+            /* font-bold */
+            font-weight: 700;
+            /* mb-2 */
+           
+            /* p-2 */
+            padding: 0.5rem; /* 8px */
+            /* rounded-t-lg */ /* Áp dụng bo góc trên cho tất cả, có thể điều chỉnh sau */
+            border-top-left-radius: 0.5rem; /* 8px */
+            border-top-right-radius: 0.5rem; /* 8px */
+            
+            /* --- Loại bỏ w-* để chúng tự co dãn theo flexbox --- */
+            /* --- Căn chỉnh nội dung trong ô --- */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            /* --- Loại bỏ border mặc định từ code trước nếu có --- */
+            border: none;
+        }
+
+        /* --- Màu sắc cho từng tiêu đề (giữ nguyên hoặc cập nhật nếu cần) --- */
+        /* Pháp - Đỏ */
+        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div:first-child {
+            /* bg-red-700 */
+            background-color: #b91c1c; /* red-700 */
+            /* text-white */
+            color: #ffffff;
+        }
+
+        /* Việt Nam - Xanh */
+        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div:nth-child(2) {
+            /* bg-green-700 */
+            background-color: #15803d; /* green-700 */
+            /* text-white */
+            color: #ffffff;
+        }
+
+        /* Chưa chọn - Xám */
+        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div:last-child {
+            
+            background-color: #616161; /* gray-700 */
+            /* text-white */
+            color: #ffffff;
+        }
+        /* ------------------------------------------ */
+
+
+        /* Style cho nút Back khi result-item fullscreen */
         .fullscreen-back-btn {
             position: absolute;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            ...
+            background-color: rgba(239, 68, 68, 0.8);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 1rem;
+            z-index: 10002;
         }
         .fullscreen-back-btn:hover {
-            ...
+            background-color: rgba(220, 38, 38, 0.9); /* hover:bg-red-700 */
         }
-        */
 
         /* --- CSS để ẩn playersPanel một cách mượt mà và giữ vị trí --- */
         #playersPanel.hidden-panel {
