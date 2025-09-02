@@ -12,9 +12,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const gameStatus = document.getElementById('gameStatus');
     const playersPanel = document.getElementById('playersPanel');
     const resultsPanel = document.getElementById('resultsPanel');
+    const gameInterfacePanel = document.getElementById('gameInterfacePanel'); // Thêm
     const fullscreenToggleBtn = document.getElementById('fullscreenToggleBtn');
     const resultsContainer = document.getElementById('resultsContainer');
+    const showResultsBtn = document.getElementById('showResultsBtn'); // Thêm
 
+    // Biến để theo dõi trạng thái ẩn/hiện của playersPanel
     let playersPanelVisible = true;
     let isAnyResultFullscreen = false;
     let resultsUpdateInterval;
@@ -28,6 +31,11 @@ document.addEventListener('DOMContentLoaded', function () {
     startGameBtn.addEventListener('click', startGame);
     endGameBtn.addEventListener('click', endGame);
     togglePlayersBtn.addEventListener('click', togglePlayersPanel);
+    
+    // Thêm sự kiện cho nút Show đáp án
+    if (showResultsBtn) {
+        showResultsBtn.addEventListener('click', showResultsPanel);
+    }
 
     checkGameStatus();
     const statusUpdateInterval = setInterval(checkGameStatus, 3000);
@@ -71,6 +79,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.success) {
                 showNotification('🎮 Game đã bắt đầu!', 'success');
                 checkGameStatus();
+                // --- Hiệu ứng chuyển panel với transition ---
+                switchPanelWithTransition(resultsPanel, gameInterfacePanel);
+                // ----------------------------------
+                // --- Hiển thị nút Show đáp án khi game bắt đầu ---
+                if (showResultsBtn) {
+                    showResultsBtn.classList.remove('hidden');
+                }
             } else {
                 showNotification(`❌ ${data.message}`, 'error');
             }
@@ -112,6 +127,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.success) {
                 showNotification('🏁 Game đã kết thúc!', 'success');
                 checkGameStatus();
+                // --- Hiệu ứng chuyển panel với transition ---
+                switchPanelWithTransition(gameInterfacePanel, resultsPanel);
+                // ---------------------------------
+                // --- Ẩn nút Show đáp án khi game kết thúc ---
+                if (showResultsBtn) {
+                    showResultsBtn.classList.add('hidden');
+                }
             } else {
                 showNotification(`❌ ${data.message}`, 'error');
             }
@@ -126,23 +148,61 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function togglePlayersPanel() {
+        // Xác định panel kết quả nào đang hiển thị
+        const isGameInterfaceVisible = !gameInterfacePanel.classList.contains('hidden');
+        const isResultsPanelVisible = !resultsPanel.classList.contains('hidden');
+        const targetPanel = isGameInterfaceVisible ? gameInterfacePanel : (isResultsPanelVisible ? resultsPanel : null);
+
         if (playersPanelVisible) {
-            playersPanel.style.width = '0';
-            playersPanel.style.minWidth = '0';
-            playersPanel.style.padding = '0';
-            playersPanel.style.border = 'none';
-            resultsPanel.classList.add('w-full');
+            // --- Ẩn playersPanel bằng cách thêm class ---
+            playersPanel.classList.add('hidden-panel');
+            
+            // Mở rộng panel kết quả để lấp đầy không gian
+            if (targetPanel) {
+                targetPanel.classList.add('w-full');
+            }
+            
             togglePlayersBtn.innerHTML = '👥 Hiện Người chơi';
         } else {
-            playersPanel.style.width = '';
-            playersPanel.style.minWidth = '';
-            playersPanel.style.padding = '';
-            playersPanel.style.borderLeft = '1px solid #374151';
-            resultsPanel.classList.remove('w-full');
+            // --- Hiện playersPanel bằng cách xóa class ---
+            playersPanel.classList.remove('hidden-panel');
+            
+            // Thu hẹp panel kết quả về kích thước ban đầu
+            if (targetPanel) {
+                targetPanel.classList.remove('w-full');
+            }
+            
             togglePlayersBtn.innerHTML = '👥 Ẩn Người chơi';
         }
         playersPanelVisible = !playersPanelVisible;
     }
+
+
+    // --- Thêm/cập nhật hàm mới để hiển thị panel kết quả với hiệu ứng ---
+    function showResultsPanel(event) {
+        // --- Hiệu ứng cho nút "Show đáp án" ---
+        const button = event ? event.currentTarget : showResultsBtn; // Lấy nút được click
+        if (button) {
+            const originalTransition = button.style.transition;
+            button.style.transition = 'transform 0.2s ease'; // Thêm transition nếu chưa có
+            button.style.transform = 'scale(0.95)'; // Thu nhỏ nút
+
+            // Sau một thời gian ngắn, mới thực hiện chuyển panel và reset nút
+            setTimeout(() => {
+                button.style.transition = originalTransition; // Khôi phục transition gốc
+                button.style.transform = ''; // Reset transform
+
+                // --- Hiệu ứng chuyển panel với transition ---
+                switchPanelWithTransition(gameInterfacePanel, resultsPanel);
+                // ---------------------------------
+            }, 150); // Thời gian nên <= transition time
+        } else {
+            // Nếu không có event, thực hiện ngay
+            switchPanelWithTransition(gameInterfacePanel, resultsPanel);
+        }
+    }
+    // ----------------------------------------------
+    // ----------------------------------------------
 
     function checkGameStatus() {
         const backendUrl = getBackendUrl();
@@ -169,6 +229,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         `;
                         startGameBtn.disabled = true;
                         endGameBtn.disabled = false;
+                        // --- Hiển thị nút Show đáp án nếu game đang chạy ---
+                        if (showResultsBtn) {
+                            showResultsBtn.classList.remove('hidden');
+                        }
                     } else {
                         statusElement.innerHTML = `
                             <div class="text-yellow-400 font-medium flex justify-center items-center">
@@ -178,6 +242,18 @@ document.addEventListener('DOMContentLoaded', function () {
                         `;
                         startGameBtn.disabled = false;
                         endGameBtn.disabled = true;
+                        // --- Đảm bảo hiển thị đúng panel khi game chưa bắt đầu ---
+                        // Chỉ ẩn gameInterfacePanel và hiện lại resultsPanel nếu cần
+                        if (!gameInterfacePanel.classList.contains('hidden')) {
+                            gameInterfacePanel.classList.add('hidden');
+                            resultsPanel.classList.remove('hidden');
+                        }
+                        // --- Ẩn nút Show đáp án khi game chưa bắt đầu ---
+                        if (showResultsBtn) {
+                            showResultsBtn.classList.add('hidden');
+                        }
+                        // playersPanel không bị thay đổi ở đây
+                        // --------------------------------------------------------
                     }
                 }
             })
@@ -311,24 +387,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 resultsGrid.appendChild(resultElement);
 
-                // Gắn sự kiện click cho toàn bộ ô kết quả - ĐÃ CẬP NHẬT
+                // --- Gắn sự kiện click để hiệu ứng thu nhỏ ---
                 resultElement.addEventListener('click', function (event) {
-                    // Kiểm tra xem click có phải trên nút "Quay lại" không
-                    if (event.target.classList.contains('fullscreen-back-btn')) {
-                        return;
-                    }
+                    // --- Hiệu ứng thu nhỏ khi click (giữ nguyên) ---
+                    const originalTransition = this.style.transition;
+                    this.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    this.style.transform = 'scale(0.92)';
 
-                    // --- Thêm hiệu ứng thu phóng khi click ---
-                    const originalTransition = this.style.transition; // Lưu transition gốc
-                    this.style.transition = 'transform 0.2s ease'; // Đặt transition cho transform
-                    this.style.transform = 'scale(0.95)'; // Thu nhỏ nhẹ khi click
-
-                    // Sau một thời gian ngắn, mới thực hiện fullscreen và reset transform
+                    // Sau một thời gian ngắn, mới reset transform
                     setTimeout(() => {
-                        this.style.transition = originalTransition; // Khôi phục transition gốc
-                        this.style.transform = ''; // Reset transform
-                        toggleResultFullscreen(resultElement); // Gọi hàm fullscreen
-                    }, 150); // Thời gian ngắn để hiệu ứng hiện rõ
+                        this.style.transition = originalTransition;
+                        this.style.transform = '';
+                        // Không làm gì thêm, chỉ hiệu ứng
+                    }, 300); // Thời gian chờ nên >= thời gian transition (0.3s = 300ms)
                     // ---
                 });
             });
@@ -406,12 +477,12 @@ document.addEventListener('DOMContentLoaded', function () {
             isAnyResultFullscreen = true;
             stopResultsUpdateInterval();
             resultElement.classList.add('is-fullscreen');
-
+            
             const backButton = document.createElement('button');
             backButton.className = 'fullscreen-back-btn';
             backButton.textContent = '⬅️ Quay lại danh sách kết quả';
             backButton.title = 'Quay lại danh sách kết quả';
-
+            
             backButton.style.cssText = `
                 position: absolute;
                 bottom: 20px;
@@ -481,6 +552,45 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'https://gamedragndrop-backend.onrender.com';
         }
     }
+
+        // --- Thêm hàm tiện ích để chuyển panel với hiệu ứng ---
+    function switchPanelWithTransition(panelToHide, panelToShow) {
+        if (!panelToHide || !panelToShow) return;
+
+        // Đảm bảo panelToShow được thêm class panel-transition nếu chưa có
+        panelToShow.classList.add('panel-transition');
+
+        // 1. Đánh dấu panel ẩn sẽ bắt đầu thoát
+        panelToHide.classList.add('panel-exiting');
+
+        // 2. Sau một thời gian ngắn (phải <= thời gian transition CSS), ẩn panelToHide và chuẩn bị panelToShow
+        setTimeout(() => {
+            panelToHide.classList.add('hidden');
+            panelToHide.classList.remove('panel-exiting'); // Reset class thoát
+
+            // 3. Chuẩn bị panelToShow để vào (ẩn và đặt vị trí ban đầu)
+            panelToShow.classList.remove('hidden');
+            panelToShow.classList.add('panel-entering'); // Thêm class bắt đầu vào
+
+            // 4. Kích hoạt reflow để trình duyệt nhận class panel-entering
+            // Reflow: https://stackoverflow.com/a/24195559
+            void panelToShow.offsetWidth; // Trick force reflow
+
+            // 5. Sau một frame rất ngắn, thêm class panel-entered để kích hoạt hiệu ứng
+            requestAnimationFrame(() => {
+                panelToShow.classList.remove('panel-entering');
+                panelToShow.classList.add('panel-entered');
+            });
+        }, 300); // 300ms = thời gian transition trong CSS
+
+        // 6. Sau khi hiệu ứng hoàn tất, dọn dẹp class
+        setTimeout(() => {
+            panelToShow.classList.remove('panel-entered', 'panel-transition');
+            // Không loại bỏ panel-transition khỏi panelToShow vì có thể dùng lại
+        }, 600); // 600ms = 2 * thời gian transition
+    }
+    // ----------------------------------------------
+    
 
     loadResults();
 

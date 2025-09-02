@@ -42,10 +42,9 @@
             cursor: pointer;
             /* Bóng mạnh hơn một chút để tạo hiệu ứng nổi */
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-            /* Màu nền khi hover */
-            /* background-color: #4b5563; */
             /* Thêm hiệu ứng thu phóng nhẹ */
             transform: scale(1.03);
+            /* Đã loại bỏ background-color */
         }
         /* Style cho grid kết quả - CỐ ĐỊNH 5x4 - KÍCH THƯỚC BẰNG NHAU */
         #resultsGrid {
@@ -166,6 +165,64 @@
             ...
         }
         */
+
+        /* --- CSS để ẩn playersPanel một cách mượt mà và giữ vị trí --- */
+        #playersPanel.hidden-panel {
+            flex: 0 0 0px !important; /* flex-grow: 0, flex-shrink: 0, flex-basis: 0px */
+            min-width: 0px;
+            padding: 0 !important;
+            border: none !important;
+            overflow: hidden; /* Ẩn nội dung tràn ra */
+        }
+        /* ------------------------------------------ */
+
+        /* --- CSS CHO GIAO DIỆN KÉO THẢ TRONG GUI2 --- */
+        /* Style cho draggable và drop-zone trong giao diện admin */
+        #gameInterfacePanel .draggable {
+            cursor: grab;
+            user-select: none;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        #gameInterfacePanel .draggable.dragging {
+            cursor: grabbing;
+            opacity: 0.8;
+            z-index: 1000;
+        }
+        #gameInterfacePanel .drop-zone {
+            min-height: 150px;
+            border: 2px dashed #cbd5e0;
+            position: relative;
+            transition: background-color 0.2s ease;
+            background-color: #374151; /* bg-gray-700 */
+        }
+        #gameInterfacePanel .drop-zone.active {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+        #gameInterfacePanel .drop-zone .placeholder {
+            pointer-events: none;
+        }
+        .panel-transition {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .panel-entering {
+            opacity: 0;
+            transform: translateY(10px); /* Bắt đầu từ dưới lên một chút */
+        }
+        .panel-entered {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .panel-exiting {
+            opacity: 0;
+            transform: translateY(-10px); /* Thoát lên trên một chút */
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -186,10 +243,17 @@
                             class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         🏁 Kết thúc Game
                     </button>
+                    <button id="showResultsBtn"
+                            class="bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-colors hidden sm:flex items-center justify-center">
+                        📊 Show đáp án
+                    </button>
+
                     <button id="togglePlayersBtn"
                             class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
                         👥 Ẩn/Hiện Người chơi
                     </button>
+                   
+                    
                 </div>
             </div>
 
@@ -200,6 +264,7 @@
             </div>
 
             <div class="flex-1 flex overflow-hidden">
+                <!-- Panel hiển thị kết quả game (ban đầu hiển thị) -->
                 <div id="resultsPanel" class="flex-1 h-full flex flex-col">
                     <div class="p-3 border-b border-gray-700 flex justify-between items-center">
                         <h2 class="text-lg font-semibold">📊 Kết quả Game</h2>
@@ -221,6 +286,88 @@
                     </div>
                 </div>
 
+                <!-- Panel giao diện game kéo thả (ban đầu ẩn) -->
+                <div id="gameInterfacePanel" class="hidden flex-1 h-full flex flex-col">
+                    <div class="bg-gray-800 rounded-lg shadow-md p-4 mb-4 border border-gray-700 flex-1 overflow-y-auto flex flex-col">
+                        <div id="draggablesContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 mb-4 flex-grow overflow-y-auto">
+                            <div class="draggable bg-blue-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item1">
+                                Cố tình bội ước
+                            </div>
+                            <div class="draggable bg-green-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item2">
+                                Gây hấn, khiêu khích, gây xung đột quân sự
+                            </div>
+                            <div class="draggable bg-red-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item3">
+                                Thảm sát đồng bào ở Hà Nội và một số địa phương
+                            </div>
+                            <div class="draggable bg-yellow-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item4">
+                                Chỉ thị “Toàn dân kháng chiến”
+                            </div>
+                            <div class="draggable bg-purple-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item5">
+                                Chủ trương nhân nhượng, hòa hoãn
+                            </div>
+                            <div class="draggable bg-pink-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item6">
+                                Đánh chiếm Hải Phòng, Lạng Sơn, Đà Nẵng, Hải Dương
+                            </div>
+                            <div class="draggable bg-indigo-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item7">
+                                Đưa liên tiếp ba tối hậu thư
+                            </div>
+                            <div class="draggable bg-teal-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item8">
+                                Đơn phương cắt đứt mọi liên hệ với chính phủ Việt Nam
+                            </div>
+                            <div class="draggable bg-orange-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item9">
+                                Bày tỏ thiện chí hòa bình
+                            </div>
+                            <div class="draggable bg-cyan-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item10">
+                                Cứu vãn mối quan hệ Việt - Pháp
+                            </div>
+                            <div class="draggable bg-lime-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item11">
+                                “Lời kêu gọi toàn quốc kháng chiến”
+                            </div>
+                            <div class="draggable bg-rose-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item12">
+                                Chiến tranh phá hoại miền Bắc
+                            </div>
+                            <div class="draggable bg-amber-600 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item13">
+                                Đất nước bị chia cắt hai miền
+                            </div>
+                            <div class="draggable bg-rose-900 text-white p-2 rounded-lg font-medium text-xs sm:text-sm flex items-center justify-center text-center"
+                                 data-item="item14">
+                                Quốc sách “Ấp chiến lược”
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 flex-shrink-0">
+                            <div class="flex flex-col h-full">
+                                <h3 class="text-center text-xl font-bold mb-1 bg-red-700 text-white p-1 rounded-t-lg">Về phía thực dân Pháp</h3>
+                                <div class="drop-zone flex-grow rounded-b-lg p-2 bg-gray-700 min-h-[100px] flex items-center justify-center" id="dropZone1_admin">
+                                    <p class="placeholder text-gray-400 text-center italic text-xs">Kéo nội dung vào đây</p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col h-full">
+                                <h3 class="text-center text-xl font-bold mb-1 bg-green-700 text-white p-1 rounded-t-lg">Về phía Việt Nam</h3>
+                                <div class="drop-zone flex-grow rounded-b-lg p-2 bg-gray-700 min-h-[100px] flex items-center justify-center" id="dropZone2_admin">
+                                    <p class="placeholder text-gray-400 text-center italic text-xs">Kéo nội dung vào đây</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Hết Panel giao diện game -->
+
+                <!-- Panel danh sách người chơi (ban đầu hiển thị, luôn ở bên phải) -->
                 <div id="playersPanel" class="w-1/5 h-full border-l border-gray-700 flex flex-col collapsible">
                     <div class="p-3 border-b border-gray-700">
                         <h2 class="text-lg font-semibold">👥 Người chơi</h2>
