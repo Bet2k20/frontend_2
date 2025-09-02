@@ -1,3 +1,5 @@
+// js/gui1.js (Phiên bản đã sửa)
+
 document.addEventListener('DOMContentLoaded', function () {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (currentUser) {
@@ -18,6 +20,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let draggedElementOriginalParent = null;
     let initialX, initialY, currentX, currentY;
     let offsetX, offsetY;
+    // --- Biến lưu trữ kích thước ban đầu ---
+    let originalStyles = {};
 
     let draggedItems = {
         french: [],
@@ -25,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
         unassigned: []
     };
 
+    // --- Hàm tiện ích ---
     function getItemsInDropZone(dropZone) {
         return Array.from(dropZone.querySelectorAll('.draggable:not(.placeholder)'));
     }
@@ -39,11 +44,25 @@ document.addEventListener('DOMContentLoaded', function () {
             text: el.textContent.trim()
         }));
         draggedItems.unassigned = Array.from(draggablesContainer.children)
-            .filter(el => el.classList.contains('draggable') && !el.classList.contains('placeholder'))
+            .filter(el => el.classList.contains('draggable')) // Bỏ điều kiện !.placeholder vì placeholder không có class draggable
             .map(el => ({
                 id: el.dataset.item,
                 text: el.textContent.trim()
             }));
+    }
+
+    function managePlaceholder(dropZone) {
+        const items = getItemsInDropZone(dropZone);
+        const placeholder = dropZone.querySelector('.placeholder');
+
+        if (items.length === 0 && !placeholder) {
+            const p = document.createElement('p');
+            p.className = 'placeholder text-gray-400 text-center italic';
+            p.textContent = 'Kéo sự kiện vào đây';
+            dropZone.appendChild(p);
+        } else if (items.length > 0 && placeholder) {
+            placeholder.remove();
+        }
     }
 
     function dragStart(e) {
@@ -51,10 +70,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         draggedElement = this;
         draggedElementOriginalParent = draggedElement.parentNode;
-
         draggedElement.classList.add('dragging');
 
         const rect = draggedElement.getBoundingClientRect();
+
+        // Giữ kích thước nguyên khi kéo để không bị 'bành' ra
+        draggedElement.style.width = `${rect.width}px`;
+        draggedElement.style.height = `${rect.height}px`;
+
+        // Đặt vị trí ban đầu (dùng fixed để dễ tính toán so với viewport)
+        draggedElement.style.position = 'fixed';
+        draggedElement.style.left = `${rect.left}px`;
+        draggedElement.style.top = `${rect.top}px`;
+        draggedElement.style.zIndex = '10000';
+
         if (e.type === 'mousedown') {
             initialX = e.clientX;
             initialY = e.clientY;
@@ -62,10 +91,17 @@ document.addEventListener('DOMContentLoaded', function () {
             initialX = e.touches[0].clientX;
             initialY = e.touches[0].clientY;
         }
+
+        // offset so với viewport (rect.left/top là viewport coords)
         offsetX = initialX - rect.left;
         offsetY = initialY - rect.top;
 
+        // Ngăn chọn text / cuộn trang
         e.preventDefault();
+        document.body.style.userSelect = 'none';
+
+        // bật class moving để áp dụng pointer-events:none (CSS)
+        draggedElement.classList.add('moving');
     }
 
     function drag(e) {
@@ -77,62 +113,99 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (e.type === 'touchmove') {
             currentX = e.touches[0].clientX;
             currentY = e.touches[0].clientY;
-            e.preventDefault();
+            e.preventDefault(); // ngăn cuộn trên mobile
         }
 
-        const containerRect = draggablesContainer.getBoundingClientRect();
-        let newX = currentX - containerRect.left - offsetX;
-        let newY = currentY - containerRect.top - offsetY;
+        // Tính toạ độ mới so với viewport (position: fixed)
+        const newLeft = currentX - offsetX;
+        const newTop = currentY - offsetY;
 
-        draggedElement.style.left = `${newX}px`;
-        draggedElement.style.top = `${newY}px`;
-        draggedElement.classList.add('moving');
+        draggedElement.style.left = `${newLeft}px`;
+        draggedElement.style.top = `${newTop}px`;
     }
 
     function dragEnd(e) {
         if (!draggedElement) return;
 
-        draggedElement.classList.remove('dragging', 'moving');
-        draggedElement.style.left = '';
-        draggedElement.style.top = '';
-        draggedElement.style.position = '';
-
-        let dropTarget = null;
+        // Lấy toạ độ thả
+        let releaseX, releaseY;
         if (e.type === 'mouseup') {
-            dropTarget = document.elementFromPoint(e.clientX, e.clientY);
+            releaseX = e.clientX;
+            releaseY = e.clientY;
         } else if (e.type === 'touchend') {
             const touch = e.changedTouches[0];
-            dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+            releaseX = touch.clientX;
+            releaseY = touch.clientY;
+        } else {
+            const r = draggedElement.getBoundingClientRect();
+            releaseX = r.left + r.width / 2;
+            releaseY = r.top + r.height / 2;
         }
 
-        let targetDropZone = null;
-        if (dropTarget) {
-            targetDropZone = dropTarget.closest('.drop-zone');
-        }
+        // Tạm tắt pointer-events của phần tử đang kéo để elementFromPoint trả về phần tử bên dưới
+        const prevPointer = draggedElement.style.pointerEvents;
+        draggedElement.style.pointerEvents = 'none';
+        const dropTarget = document.elementFromPoint(releaseX, releaseY);
+        // Khôi phục pointer-events
+        draggedElement.style.pointerEvents = prevPointer;
+
+        const targetDropZone = dropTarget ? dropTarget.closest('.drop-zone') : null;
 
         if (targetDropZone) {
             if (targetDropZone !== draggedElementOriginalParent) {
-                if (draggedElementOriginalParent.classList.contains('drop-zone')) {
-                    draggedElementOriginalParent.removeChild(draggedElement);
+                // Nếu kéo từ drop-zone khác -> xóa placeholder cũ
+                if (draggedElementOriginalParent && draggedElementOriginalParent.classList.contains('drop-zone')) {
+                    try { draggedElementOriginalParent.removeChild(draggedElement); } catch (err) {}
+                    managePlaceholder(draggedElementOriginalParent);
                 }
                 const placeholder = targetDropZone.querySelector('.placeholder');
-                if (placeholder) {
-                    targetDropZone.removeChild(placeholder);
-                }
+                if (placeholder) placeholder.remove();
+
+                // Reset kiểu inline trước khi append để nó nhận layout mới
+                draggedElement.style.position = '';
+                draggedElement.style.left = '';
+                draggedElement.style.top = '';
+                draggedElement.style.zIndex = '';
+                draggedElement.style.width = '';
+                draggedElement.style.height = '';
+
                 targetDropZone.appendChild(draggedElement);
+            } else {
+                // Thả về cùng parent (giữ nguyên vị trí trong DOM) -> reset style
+                draggedElement.style.position = '';
+                draggedElement.style.left = '';
+                draggedElement.style.top = '';
+                draggedElement.style.zIndex = '';
+                draggedElement.style.width = '';
+                draggedElement.style.height = '';
             }
         } else {
-            if (!draggedElementOriginalParent.classList.contains('drop-zone')) {
-            } else {
+            // Thả ngoài drop-zone -> trả về container chính nếu trước đó từ drop-zone
+            if (draggedElementOriginalParent && draggedElementOriginalParent.classList.contains('drop-zone')) {
                 draggablesContainer.appendChild(draggedElement);
+                managePlaceholder(draggedElementOriginalParent);
             }
+            draggedElement.style.position = '';
+            draggedElement.style.left = '';
+            draggedElement.style.top = '';
+            draggedElement.style.zIndex = '';
+            draggedElement.style.width = '';
+            draggedElement.style.height = '';
         }
 
+        // Reset trạng thái kéo
+        document.body.style.userSelect = '';
+        draggedElement.classList.remove('dragging', 'moving');
+
         updateDraggedItemsState();
+        managePlaceholder(dropZone1);
+        managePlaceholder(dropZone2);
+
         draggedElement = null;
         draggedElementOriginalParent = null;
     }
 
+    // --- Event Listeners cho kéo thả ---
     const draggables = document.querySelectorAll('.draggable');
     draggables.forEach(draggable => {
         draggable.addEventListener('mousedown', dragStart);
@@ -144,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('mouseup', dragEnd);
     document.addEventListener('touchend', dragEnd);
 
+    // --- Hiệu ứng highlight drop-zone ---
     function handleDragOverZones(e) {
         if (!draggedElement) return;
         const x = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
@@ -159,17 +233,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    document.addEventListener('mousemove', handleDragOverZones);
-    document.addEventListener('touchmove', handleDragOverZones);
-
     function clearDragOverZones() {
         dropZone1.classList.remove('active');
         dropZone2.classList.remove('active');
     }
 
+    document.addEventListener('mousemove', handleDragOverZones);
+    document.addEventListener('touchmove', handleDragOverZones);
     document.addEventListener('mouseup', clearDragOverZones);
     document.addEventListener('touchend', clearDragOverZones);
 
+    // --- Logic Game ---
     let isGameActive = false;
 
     submitBtn.addEventListener('click', function () {
@@ -185,12 +259,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const statusUrl = `${backendUrl}/api/game/status`;
 
         fetch(statusUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
+            .then(response => response.json()) // Bỏ kiểm tra response.ok để đơn giản hóa
             .then(data => {
                 if (data.success && data.session.isActive) {
                     isGameActive = true;
@@ -223,17 +292,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const statusUrl = `${backendUrl}/api/game/status`;
 
         fetch(statusUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
+            .then(response => response.json()) // Bỏ kiểm tra response.ok để đơn giản hóa
             .then(data => {
                 if (data.success && data.session.isActive) {
                     updateDraggedItemsState();
-                    const totalDroppedOrAssigned = draggedItems.french.length + draggedItems.vietnam.length + draggedItems.unassigned.length;
-                    if (totalDroppedOrAssigned > 0) {
+                    const totalItems = draggedItems.french.length + draggedItems.vietnam.length + draggedItems.unassigned.length;
+                    const totalDroppedOrAssigned = draggedItems.french.length + draggedItems.vietnam.length;
+
+                    if (totalItems > 0 && totalDroppedOrAssigned > 0) {
                         const gameData = {
                             user: currentUser,
                             items: {
@@ -244,8 +310,10 @@ document.addEventListener('DOMContentLoaded', function () {
                             timestamp: new Date().toISOString()
                         };
                         sendToBackend(gameData);
-                    } else {
+                    } else if (totalItems === 0) {
                         alert('Không có sự kiện nào để gửi!');
+                    } else {
+                        alert('Vui lòng kéo ít nhất một sự kiện vào một cột trước khi gửi!');
                     }
                 } else {
                     alert('🎮 Game đã kết thúc!');
@@ -302,32 +370,18 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: JSON.stringify(gameData)
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
+            .then(response => response.json()) // Bỏ kiểm tra response.ok để đơn giản hóa
             .then(data => {
                 if (data.success) {
                     alert('✅ Đã gửi kết quả thành công!');
                     const allItems = [...getItemsInDropZone(dropZone1), ...getItemsInDropZone(dropZone2)];
                     allItems.forEach(item => draggablesContainer.appendChild(item));
-                    
-                    if (dropZone1.children.length === 0) {
-                         const p = document.createElement('p');
-                         p.className = 'placeholder text-gray-400 text-center italic';
-                         p.textContent = 'Kéo sự kiện vào đây';
-                         dropZone1.appendChild(p);
-                    }
-                    if (dropZone2.children.length === 0) {
-                         const p = document.createElement('p');
-                         p.className = 'placeholder text-gray-400 text-center italic';
-                         p.textContent = 'Kéo sự kiện vào đây';
-                         dropZone2.appendChild(p);
-                    }
+
+                    managePlaceholder(dropZone1);
+                    managePlaceholder(dropZone2);
 
                     draggedItems = { french: [], vietnam: [], unassigned: [] };
+                    updateDraggedItemsState(); // Cập nhật lại trạng thái sau khi reset
                 } else {
                     alert(`❌ ${data.message}`);
                 }
@@ -344,9 +398,14 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.hostname === '0.0.0.0') {
             return 'http://localhost:3000';
         } else {
+            // Loại bỏ khoảng trắng thừa
             return 'https://gamedragndrop-backend.onrender.com';
         }
     }
+
+    // --- Khởi tạo ban đầu ---
+    managePlaceholder(dropZone1);
+    managePlaceholder(dropZone2);
 
     window.addEventListener('beforeunload', function () {
         clearInterval(statusCheckInterval);

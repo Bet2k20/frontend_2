@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function () {
             headerTitlesContainer.innerHTML = `
                 <div class="w-2/5 text-red-500">Về phía thực dân Pháp</div>
                 <div class="w-2/5 text-green-500">Về phía Việt Nam</div>
-                <div class="w-1/5 text-gray-400">Chưa được chọn</div>
+                <div class="w-1/5 text-gray-500 ">Chưa được chọn</div>
             `;
             // Chèn tiêu đề ngay sau tên người dùng
             const userHeaderFullscreen = resultElement.querySelector('.result-user-fullscreen');

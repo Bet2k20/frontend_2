@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Game Kéo thả</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Thêm thư viện Fullscreen API hỗ trợ -->
-    <script src="https://cdn.jsdelivr.net/npm/screenfull@5.2.0/dist/screenfull.min.js"></script>
+    <script src="https://cdn.tailwindcss.com  "></script>
+    <script src="https://cdn.jsdelivr.net/npm/screenfull@5.2.0/dist/screenfull.min.js  "></script>
     <style>
         html, body {
             height: 100%;
@@ -31,22 +30,16 @@
             transition: background-color 0.2s ease;
             display: flex;
             flex-direction: column;
-            height: 100%; /* Chiếm toàn bộ ô grid */
+            height: 100%;
         }
-        /* Hiệu ứng hover cho ô có thể click - ĐÃ CẬP NHẬT VỚI SCALE */
         .result-item.clickable-result {
-            /* Thêm transition cho transform để mượt mà hơn */
             transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
         }
         .result-item.clickable-result:hover {
             cursor: pointer;
-            /* Bóng mạnh hơn một chút để tạo hiệu ứng nổi */
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-            /* Thêm hiệu ứng thu phóng nhẹ */
             transform: scale(1.03);
-            /* Đã loại bỏ background-color */
         }
-        /* Style cho grid kết quả - CỐ ĐỊNH 5x4 - KÍCH THƯỚC BẰNG NHAU */
         #resultsGrid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -72,60 +65,43 @@
             width: 100%;
             gap: 0.25rem;
         }
-        
         .viz-section {
             display: flex;
             flex-wrap: wrap;
             align-content: flex-start;
             overflow: hidden;
             border-radius: 0.25rem;
-            /* --- Thêm border đứt nét --- */
-            border: 1px dashed; /* Màu sẽ được định nghĩa riêng cho từng phần */
-            /* -------------------------- */
-            /* Thêm padding nhỏ để các item không sát viền */
+            border: 1px dashed;
             padding: 0.25rem;
+            align-items: stretch;
         }
         .viz-section.french {
             flex: 0 0 40%;
             background-color: rgba(239, 68, 68, 0.1);
-            /* --- Định nghĩa màu border cho Pháp --- */
-            border-color: #fecaca; /* red-200, hoặc màu khác nếu muốn */
-            /* ------------------------------------- */
+            border-color: #fecaca;
         }
         .viz-section.vietnam {
             flex: 0 0 40%;
             background-color: rgba(34, 197, 94, 0.1);
-            /* --- Định nghĩa màu border cho Việt Nam --- */
-            border-color: #bbf7d0; /* green-200, hoặc màu khác nếu muốn */
-            /* ----------------------------------------- */
+            border-color: #bbf7d0;
         }
         .viz-section.unassigned {
-            flex: 0 0 20%;
-            background-color: rgba(156, 163, 175, 0.1);
-            /* --- Định nghĩa màu border cho Chưa chọn --- */
-            border-color: #e5e7eb; /* gray-200, hoặc màu khác nếu muốn */
-            /* ------------------------------------------ */
+            flex: 0 0 19%;
+            background-color: rgba(84, 84, 84, 0.1);
+            border-color: #e5e7eb;
         }
-        /* --- Style cho các ô item trong lưới nhỏ --- */
         .viz-item {
-            font-size: 0.6rem; /* Giữ nguyên kích thước nhỏ cho lưới */
+            font-size: 0.6rem;
             padding: 0.1rem 0.2rem;
             margin: 0.1rem;
+            border: 1px dashed white;
             border-radius: 0.15rem;
             color: white;
             text-align: center;
-            min-width: 1.2rem;
+            flex: 0 0 auto;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        /* --- Style cho các ô item trong chế độ fullscreen --- */
-        .result-item.is-fullscreen .viz-item {
-            font-size: 0.75rem; /* Tăng kích thước chữ khi fullscreen */
-            padding: 0.25rem 0.5rem;
-            margin: 0.25rem;
-            min-width: 2.5rem; /* Tăng kích thước tối thiểu */
-            min-height: 2rem; /* Tăng chiều cao tối thiểu */
         }
         #fullscreenToggleBtn {
             background-color: rgba(55, 65, 81, 0.7);
@@ -158,7 +134,6 @@
             flex: 1;
         }
 
-        /* --- CSS CHO FULLSCREEN TỪNG KẾT QUẢ --- */
         .result-item.is-fullscreen {
             position: fixed;
             top: 0;
@@ -176,76 +151,12 @@
         .result-item.is-fullscreen .result-content {
             flex-grow: 1;
         }
-        /* Style cho tên người dùng khi fullscreen */
         .result-item.is-fullscreen .result-user-fullscreen {
-            font-size: 1.5rem; /* Tăng kích thước chữ */
+            font-size: 1.5rem;
             font-weight: bold;
             text-align: center;
             margin-bottom: 0.5rem;
         }
-
-                /* --- CSS cho tiêu đề trong chế độ fullscreen --- */
-        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 {
-            /* Có thể điều chỉnh khoảng cách trên dưới nếu cần */
-            margin-top: 1rem;
-            /* margin-bottom: 0.5rem; */
-        }
-
-        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div {
-            /* --- Áp dụng các class Tailwind bạn yêu cầu --- */
-            /* text-center */
-            text-align: center;
-            /* text-3xl */
-            font-size: 1.875rem; /* 30px */
-            line-height: 2.25rem; /* 36px - thường đi kèm với text-3xl */
-            /* font-bold */
-            font-weight: 700;
-            /* mb-2 */
-           
-            /* p-2 */
-            padding: 0.5rem; /* 8px */
-            /* rounded-t-lg */ /* Áp dụng bo góc trên cho tất cả, có thể điều chỉnh sau */
-            border-top-left-radius: 0.5rem; /* 8px */
-            border-top-right-radius: 0.5rem; /* 8px */
-            
-            /* --- Loại bỏ w-* để chúng tự co dãn theo flexbox --- */
-            /* --- Căn chỉnh nội dung trong ô --- */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            
-            /* --- Loại bỏ border mặc định từ code trước nếu có --- */
-            border: none;
-        }
-
-        /* --- Màu sắc cho từng tiêu đề (giữ nguyên hoặc cập nhật nếu cần) --- */
-        /* Pháp - Đỏ */
-        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div:first-child {
-            /* bg-red-700 */
-            background-color: #b91c1c; /* red-700 */
-            /* text-white */
-            color: #ffffff;
-        }
-
-        /* Việt Nam - Xanh */
-        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div:nth-child(2) {
-            /* bg-green-700 */
-            background-color: #15803d; /* green-700 */
-            /* text-white */
-            color: #ffffff;
-        }
-
-        /* Chưa chọn - Xám */
-        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div:last-child {
-            
-            background-color: #616161; /* gray-700 */
-            /* text-white */
-            color: #ffffff;
-        }
-        /* ------------------------------------------ */
-
-
-        /* Style cho nút Back khi result-item fullscreen */
         .fullscreen-back-btn {
             position: absolute;
             bottom: 20px;
@@ -261,21 +172,17 @@
             z-index: 10002;
         }
         .fullscreen-back-btn:hover {
-            background-color: rgba(220, 38, 38, 0.9); /* hover:bg-red-700 */
+            background-color: rgba(220, 38, 38, 0.9);
         }
 
-        /* --- CSS để ẩn playersPanel một cách mượt mà và giữ vị trí --- */
         #playersPanel.hidden-panel {
-            flex: 0 0 0px !important; /* flex-grow: 0, flex-shrink: 0, flex-basis: 0px */
+            flex: 0 0 0px !important;
             min-width: 0px;
             padding: 0 !important;
             border: none !important;
-            overflow: hidden; /* Ẩn nội dung tràn ra */
+            overflow: hidden;
         }
-        /* ------------------------------------------ */
 
-        /* --- CSS CHO GIAO DIỆN KÉO THẢ TRONG GUI2 --- */
-        /* Style cho draggable và drop-zone trong giao diện admin */
         #gameInterfacePanel .draggable {
             cursor: grab;
             user-select: none;
@@ -297,7 +204,7 @@
             border: 2px dashed #cbd5e0;
             position: relative;
             transition: background-color 0.2s ease;
-            background-color: #374151; /* bg-gray-700 */
+            background-color: #374151;
         }
         #gameInterfacePanel .drop-zone.active {
             background-color: #dbeafe;
@@ -307,13 +214,12 @@
             pointer-events: none;
         }
 
-        /* --- CSS CHO HIỆU ỨNG CHUYỂN TIẾP GIỮA CÁC PANEL --- */
         .panel-transition {
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
         .panel-entering {
             opacity: 0;
-            transform: translateY(10px); /* Bắt đầu từ dưới lên một chút */
+            transform: translateY(10px);
         }
         .panel-entered {
             opacity: 1;
@@ -321,9 +227,76 @@
         }
         .panel-exiting {
             opacity: 0;
-            transform: translateY(-10px); /* Thoát lên trên một chút */
+            transform: translateY(-10px);
         }
-        /* ------------------------------------------ */
+
+        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div {
+            text-align: center;
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+        }
+
+        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div:first-child {
+            background-color: #b91c1c;
+            color: #ffffff;
+        }
+
+        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div:nth-child(2) {
+            background-color: #15803d;
+            color: #ffffff;
+        }
+
+        .result-item.is-fullscreen .flex.justify-between.text-center.text-lg.font-semibold.mb-2.mt-2 > div:last-child {
+            background-color: #5d5d5d; 
+            color: #ffffff;
+        }
+
+        .result-item.is-fullscreen .viz-section {
+            flex-wrap: wrap;
+            align-content: flex-start;
+            justify-content: flex-start;
+        }
+
+        .result-item.is-fullscreen .viz-item {
+            width: 80px;
+            height: 80px;
+            font-size: 1.1rem;
+            padding: 0.5rem;
+            margin: 0.5rem;
+            border-radius: 0.25rem;
+            color: white;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            word-break: break-word;
+            box-sizing: border-box;
+        }
+
+        .result-item.is-fullscreen .viz-section.french .viz-item {
+            flex: 0 0 calc(50% - 1rem);
+            max-width: calc(50% - 1rem);
+        }
+
+        .result-item.is-fullscreen .viz-section.vietnam .viz-item {
+            flex: 0 0 calc(50% - 1rem);
+            max-width: calc(50% - 1rem);
+        }
+
+        .result-item.is-fullscreen .viz-section.unassigned .viz-item {
+            flex: 0 0 100%;
+            max-width: 95%;
+        }
+
     </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -344,15 +317,16 @@
                             class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         🏁 Kết thúc Game
                     </button>
-                    <button id="togglePlayersBtn"
-                            class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
-                        👥 Ẩn/Hiện Người chơi
-                    </button>
-                    <!-- Thêm nút Show đáp án ngay sau các nút điều khiển -->
                     <button id="showResultsBtn"
                             class="bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-colors hidden sm:flex items-center justify-center">
                         📊 Show đáp án
                     </button>
+
+                    <button id="togglePlayersBtn"
+                            class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                        👥 Ẩn/Hiện Người chơi
+                    </button>
+                    
                 </div>
             </div>
 
@@ -363,7 +337,6 @@
             </div>
 
             <div class="flex-1 flex overflow-hidden">
-                <!-- Panel hiển thị kết quả game (ban đầu hiển thị) -->
                 <div id="resultsPanel" class="flex-1 h-full flex flex-col">
                     <div class="p-3 border-b border-gray-700 flex justify-between items-center">
                         <h2 class="text-lg font-semibold">📊 Kết quả Game</h2>
@@ -385,7 +358,6 @@
                     </div>
                 </div>
 
-                <!-- Panel giao diện game kéo thả (ban đầu ẩn) -->
                 <div id="gameInterfacePanel" class="hidden flex-1 h-full flex flex-col">
                     <div class="bg-gray-800 rounded-lg shadow-md p-4 mb-4 border border-gray-700 flex-1 overflow-y-auto flex flex-col">
                         <div id="draggablesContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 mb-4 flex-grow overflow-y-auto">
@@ -464,9 +436,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Hết Panel giao diện game -->
 
-                <!-- Panel danh sách người chơi (ban đầu hiển thị, luôn ở bên phải) -->
                 <div id="playersPanel" class="w-1/5 h-full border-l border-gray-700 flex flex-col collapsible">
                     <div class="p-3 border-b border-gray-700">
                         <h2 class="text-lg font-semibold">👥 Người chơi</h2>

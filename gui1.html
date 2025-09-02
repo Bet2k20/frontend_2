@@ -9,13 +9,17 @@
         .draggable {
             cursor: grab;
             user-select: none;
-            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             position: relative;
             transition: transform 0.2s ease, opacity 0.2s ease;
+            /* --- Kích thước bằng nhau (không phải hình vuông) --- */
+            width: 100%; /* Chiếm toàn bộ chiều rộng của ô grid */
+            min-height: 100px; /* Chiều cao cố định */
+            box-sizing: border-box; /* Đảm bảo padding được tính vào kích thước */
+            /* -------------------------- */
         }
         .draggable.dragging {
             cursor: grabbing;
@@ -23,30 +27,130 @@
             z-index: 1000;
         }
         .draggable.moving {
-            position: absolute !important;
-            pointer-events: none;
+            position: fixed !important; /* dùng fixed để toạ độ dựa trên viewport */
+            pointer-events: none;       /* cho phép elementFromPoint lấy element bên dưới */
+            z-index: 10000;
+            transform: none !important; /* tránh scale/transform còn thừa */
+            margin: 0;   
         }
         .drop-zone {
-            min-height: 150px;
-            border: 2px dashed #cbd5e0;
+            min-height: 120px; /* Điều chỉnh để phù hợp với draggable */
+            border: 2px dashed #cbd5e0; /* slate-300 */
             position: relative;
             transition: background-color 0.2s ease;
+            padding: 1rem; /* p-4 */
+            border-radius: 0 0 0.5rem 0.5rem; /* rounded-b-lg */
+            background-color: #374151; /* gray-700 */
+            overflow-y: auto; /* Cho phép cuộn dọc nếu cần */
         }
         .drop-zone.active {
-            background-color: #dbeafe;
-            border-color: #3b82f6;
+            background-color: #dbeafe; /* blue-100 */
+            border-color: #3b82f6; /* blue-500 */
         }
         .drop-zone .placeholder {
             pointer-events: none;
+            color: #9ca3af; /* gray-400 */
+            text-align: center;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%; /* Chiếm toàn bộ chiều cao của drop-zone khi trống */
         }
-        @media (max-width: 768px) {
-            .grid-cols-1.sm\:grid-cols-2.md\:grid-cols-3.lg\:grid-cols-4 {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+        /* --- Layout chính --- */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* Chiếm toàn bộ chiều cao có thể */
+        }
+        /* --- Container cho 2 drop zone luôn nằm ngang --- */
+        .drop-zones-container {
+            display: flex;
+            flex-direction: row;
+            gap: 1.5rem; /* gap-6 */
+            flex-wrap: nowrap;
+            width: 100%;
+            margin-top: 1.5rem; /* mt-6 */
+            margin-bottom: 1.5rem; /* mb-6 */
+            flex-grow: 1; /* Chiếm không gian còn lại */
+        }
+        .drop-zone-column {
+            flex: 1; /* Mỗi cột chiếm 1 phần bằng nhau */
+            min-width: 0; /* Cho phép cột co lại nếu cần */
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* Chiều cao đầy đủ */
+        }
+        /* Đảm bảo drop zone bên trong cột chiếm toàn bộ chiều cao */
+        .drop-zone-column > .drop-zone {
+            flex-grow: 1;
+        }
+        /* --- Điều chỉnh cho Màn hình Nhỏ (Điện thoại) --- */
+        @media (max-width: 767px) { /* Dưới 'sm' breakpoint của Tailwind (768px) */
+            .draggable {
+                min-height: 70px; /* Chiều cao nhỏ hơn */
+                padding: 0.4rem 0.6rem; /* p-2 */
+                font-size: 0.75rem; /* text-xs */
+            }
+            .drop-zone {
+                min-height: 90px; /* Chiều cao tối thiểu nhỏ hơn */
+                padding: 0.75rem; /* p-3 */
+                max-height: 25vh; /* Giới hạn chiều cao theo phần trăm viewport */
+            }
+            .drop-zones-container {
+                gap: 1rem; /* gap-4 */
+                margin-top: 1rem; /* mt-4 */
+                margin-bottom: 1rem; /* mb-4 */
+            }
+            h2 {
+                font-size: 1rem; /* text-lg */
+                margin-bottom: 1rem; /* mb-4 */
+            }
+            h3 {
+                font-size: 1.125rem; /* text-xl */
+                padding: 0.5rem; /* p-2 */
+            }
+            button {
+                padding: 0.75rem; /* py-3 */
+                font-size: 0.875rem; /* text-sm */
+            }
+            /* Đảm bảo lưới các mục kéo có 2 cột trên điện thoại */
+            #draggablesContainer {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.5rem !important; /* gap-2 */
             }
         }
-        @media (max-width: 480px) {
-            .grid-cols-1.sm\:grid-cols-2.md\:grid-cols-3.lg\:grid-cols-4 {
-                grid-template-columns: 1fr;
+        /* --- Điều chỉnh cho Màn hình Rất Nhỏ (Điện thoại nhỏ) --- */
+        @media (max-width: 479px) { /* Dưới 'sm' breakpoint thấp hơn (480px) */
+             .draggable {
+                min-height: 60px; /* Chiều cao nhỏ hơn nữa */
+                padding: 0.3rem 0.5rem; /* p-1.5 */
+                font-size: 0.65rem; /* text-xs nhỏ hơn */
+            }
+            .drop-zone {
+                min-height: 80px; /* Chiều cao tối thiểu nhỏ hơn nữa */
+                padding: 0.5rem; /* p-2 */
+                max-height: 22vh; /* Giới hạn chiều cao theo phần trăm viewport */
+            }
+            .drop-zones-container {
+                gap: 0.75rem; /* gap-3 */
+            }
+            h2 {
+                font-size: 0.875rem; /* text-base */
+                margin-bottom: 0.75rem; /* mb-3 */
+            }
+            h3 {
+                font-size: 1rem; /* text-lg */
+                padding: 0.4rem; /* p-1.5 */
+            }
+            button {
+                padding: 0.6rem; /* py-2.5 */
+                font-size: 0.8rem; /* text-xs */
+            }
+             /* Đảm bảo lưới các mục kéo có 2 cột */
+            #draggablesContainer {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.4rem !important;
             }
         }
     </style>
@@ -58,10 +162,10 @@
             <p class="text-center md:text-right text-sm" id="gameStatusInfo">Đang kiểm tra trạng thái game...</p>
         </div>
 
-        <div class="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700">
+        <div class="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700 main-content">
             <h2 class="text-lg font-semibold text-white mb-4 text-center">Kéo các sự kiện vào cột tương ứng:</h2>
             
-            <div id="draggablesContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6 relative">
+            <div id="draggablesContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
                 <div class="draggable bg-blue-600 text-white p-3 rounded-lg font-medium" 
                      data-item="item1">
                     Cố tình bội ước
@@ -120,25 +224,26 @@
                 </div>
             </div>
 
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="flex flex-col">
-                    <h3 class="text-center text-3xl font-bold mb-2 bg-red-700 text-white p-2 rounded-t-lg">Về phía thực dân Pháp</h3>
-                    <div class="drop-zone flex-grow rounded-b-lg p-4 bg-gray-700 relative" id="dropZone1">
+            <div class="drop-zones-container">
+                <div class="drop-zone-column">
+                    <h3 class="text-center text-2xl font-bold mb-2 bg-red-700 text-white p-2 rounded-t-lg">
+                        Về phía thực dân Pháp
+                    </h3>
+                    <div class="drop-zone" id="dropZone1">
                         <p class="placeholder text-gray-400 text-center italic">Kéo sự kiện vào đây</p>
                     </div>
                 </div>
 
-
-                <div class="flex flex-col">
-                    <h3 class="text-center text-3xl font-bold mb-2 bg-green-700 text-white p-2 rounded-t-lg">Về phía Việt Nam</h3>
-                    <div class="drop-zone flex-grow rounded-b-lg p-4 bg-gray-700 relative" id="dropZone2">
+                <div class="drop-zone-column" id="dropZone2">
+                    <h3 class="text-center text-2xl font-bold mb-2 bg-green-700 text-white p-2 rounded-t-lg">
+                        Về phía Việt Nam
+                    </h3>
+                    <div class="drop-zone">
                         <p class="placeholder text-gray-400 text-center italic">Kéo sự kiện vào đây</p>
                     </div>
                 </div>
             </div>
 
-            
             <button id="submitBtn" 
                     class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50">
                 Gửi kết quả
