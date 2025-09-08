@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'http://localhost:3000';
         } else {
             
-            return 'https://gamedragndrop-backend.onrender.com';
+            return 'https://backend-2-goy4.onrender.com/';
         }
     }
 

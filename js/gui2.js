@@ -198,25 +198,25 @@ document.addEventListener('DOMContentLoaded', function () {
         // Dữ liệu đáp án mẫu
         const answerData = {
             french: [
-                { id: 'item1', text: 'Cố tình bội ước' },
-                { id: 'item2', text: 'Gây hấn, khiêu khích, gây xung đột quân sự' },
-                { id: 'item3', text: 'Thảm sát đồng bào ở Hà Nội và một số địa phương' },
-                { id: 'item6', text: 'Đánh chiếm Hải Phòng, Lạng Sơn, Đà Nẵng, Hải Dương' },
-                { id: 'item7', text: 'Đưa liên tiếp ba tối hậu thư' },
-                { id: 'item8', text: 'Đơn phương cắt đứt mọi liên hệ với chính phủ Việt Nam' }
+                { id: 'item1', text: 'Chủ nghĩa đế quốc đàn áp' },
+                { id: 'item2', text: 'Không có quốc gia công nhận' },
+                { id: 'item3', text: 'Chính quyền non trẻ' },
+                { id: 'item6', text: 'Kinh tế kiệt quệ, tài chính trống rỗng' },
+                { id: 'item7', text: 'Văn hóa - xã hội: Mù chữ, chết đói' },
+                { id: 'item8', text: 'Ngoại giao' },
+                { id: 'item13', text: 'Thù trong - Giặc ngoài' },
                 
             ],
             vietnam: [
-                { id: 'item4', text: 'Chỉ thị “Toàn dân kháng chiến”' },
-                { id: 'item5', text: 'Chủ trương nhân nhượng, hòa hoãn' },
-                { id: 'item9', text: 'Bày tỏ thiện chí hòa bình' },
-                { id: 'item10', text: 'Cứu vãn mối quan hệ Việt - Pháp' },
-                { id: 'item11', text: '“Lời kêu gọi toàn quốc kháng chiến”' }
+                { id: 'item4', text: 'Hệ thống XHCN hình thành' },
+                { id: 'item5', text: 'Phong trào đấu tranh GPDT' },
+                { id: 'item9', text: 'Việt Nam trở thành quốc gia độc lập' },
+                { id: 'item10', text: 'Đảng Cộng sản cầm quyền' },
+                { id: 'item11', text: 'Hệ thống chính quyền thành lập' },
+                { id: 'item12', text: 'Toàn dân tộc đoàn kết' },
             ],
             unassigned: [
-                { id: 'item12', text: 'Chiến tranh phá hoại miền Bắc' },
-                { id: 'item13', text: 'Đất nước bị chia cắt hai miền' },
-                { id: 'item14', text: 'Quốc sách “Ấp chiến lược”' }
+
             ]
         };
 
@@ -238,11 +238,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         
         const answerContentHtml = `
-            <div class="result-user-fullscreen">Đáp án Mẫu</div>
+            <div class="result-user-fullscreen">ĐÁP ÁN</div>
             <div class="flex justify-between text-center text-lg font-semibold mb-2 mt-2">
-                <div class="w-2/5 text-red-500">Về phía thực dân Pháp</div>
-                <div class="w-2/5 text-green-500">Về phía Việt Nam</div>
-                <div class="w-1/5 text-gray-500">Nội dung nhiễu</div>
+                <div class="w-2/5 text-red-500">Khó khăn</div>
+                <div class="w-2/5 text-green-500">Thuận lợi</div>
+                <div class="w-1/5 text-gray-500">   </div>
             </div>
             <div class="result-content">
                 ${createVisualizationHtml(answerData, true)} <!-- Gọi hàm tạo HTML với isFullscreen = true -->
@@ -625,9 +625,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const headerTitlesContainer = document.createElement('div');
             headerTitlesContainer.className = 'flex justify-between text-center text-lg font-semibold mb-2 mt-2'; // mb-2 để tạo khoảng cách dưới
             headerTitlesContainer.innerHTML = `
-                <div class="w-2/5 text-red-500">Về phía thực dân Pháp</div>
-                <div class="w-2/5 text-green-500">Về phía Việt Nam</div>
-                <div class="w-1/5 text-gray-500 ">Chưa được chọn</div>
+                <div class="w-2/5 text-red-500">Khó khăn</div>
+                <div class="w-2/5 text-green-500">Thuận lợi</div>
+                <div class="w-1/5 text-gray-500 "> </div>
             `;
             // Chèn tiêu đề ngay sau tên người dùng
             const userHeaderFullscreen = resultElement.querySelector('.result-user-fullscreen');
@@ -735,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.hostname === '0.0.0.0') {
             return 'http://localhost:3000';
         } else {
-            return 'https://gamedragndrop-backend.onrender.com';
+            return 'https://backend-2-goy4.onrender.com/';
         }
     }
 
