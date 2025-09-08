@@ -735,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.hostname === '0.0.0.0') {
             return 'http://localhost:3000';
         } else {
-            return 'https://backend-2-kfrc.onrender.com/';
+            return 'https://backend-2-kfrc.onrender.com';
         }
     }
 
