@@ -96,7 +96,7 @@ function getBackendUrl() {
         return 'http://localhost:3000';
     } else {
         
-        return 'https://backend-2-goy4.onrender.com/';
+        return 'https://backend-2-a74i.onrender.com/';
         
     }
 }
