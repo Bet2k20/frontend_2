@@ -198,26 +198,27 @@ document.addEventListener('DOMContentLoaded', function () {
         // Dữ liệu đáp án mẫu
         const answerData = {
             french: [
-                { id: 'item1', text: 'Chiến tranh thế giới thứ II kết thúc' },
-                { id: 'item2', text: 'Chính quyền tay sai hoang mang' },
-                { id: 'item3', text: 'Quân Nhật ở Đông Dương khủng hoảng' },
-                { id: 'item6', text: 'Có sự chuẩn bị đầy đủ về mọi mặt' },
-                { id: 'item7', text: 'Đảng Cộng sản tích lũy đủ kinh nghiệm lãnh đạo' },
-                { id: 'item8', text: 'Lực lượng trung gian ngả hẳn về phía Cách mạng' },
-                { id: 'item13', text: 'Nhân dân sẵn sàng khởi nghĩa' },
+                { id: 'item1', text: 'Chủ nghĩa đế quốc đàn áp' },
+                { id: 'item2', text: 'Không có quốc gia công nhận' },
+                { id: 'item3', text: 'Chính quyền non trẻ' },
+                { id: 'item6', text: 'Kinh tế kiệt quệ, tài chính trống rỗng' },
+                { id: 'item7', text: 'Văn hóa - xã hội: Mù chữ, chết đói' },
+                { id: 'item8', text: 'Ngoại giao' },
+                { id: 'item13', text: 'Thù trong - Giặc ngoài' },
                 
             ],
             vietnam: [
-                { id: 'item4', text: 'Quân đồng minh chuẩn bị vào Đông Dương' },
-                { id: 'item5', text: 'Pháp lăm le quay lại xâm lược Việt Nam' },
-                { id: 'item9', text: 'Chính phủ Mỹ quay lưng với Cách mạng Việt Nam' },
-                { id: 'item10', text: 'Thế lực chống đối Cách mạng tìm cách đối phó' },
-                { id: 'item11', text: 'Chính phủ Trần Trọng Kim tìm kiếm sự giúp đỡ' },
+                { id: 'item4', text: 'Hệ thống XHCN hình thành' },
+                { id: 'item5', text: 'Phong trào đấu tranh GPDT' },
+                { id: 'item9', text: 'Việt Nam trở thành quốc gia độc lập' },
+                { id: 'item10', text: 'Đảng Cộng sản cầm quyền' },
+                { id: 'item11', text: 'Hệ thống chính quyền thành lập' },
+                { id: 'item12', text: 'Toàn dân tộc đoàn kết' },
             ],
             unassigned: [
-                { id: 'item12', text: 'Miền Bắc tiến lên Chủ nghĩa xã hội' },
-                { id: 'item14', text: 'Mỹ triển khai "Chiến lược Chiến tranh đặc biệt"' },
-
+                { id: 'item14', text: 'Đất nước bị chia cắt làm hai miền' },
+                { id: 'item15', text: 'Các nước XHCN giúp đỡ, viện trợ' },
+                { id: 'item16', text: 'Chiến tranh phá hoại miền Bắc' }
             ]
         };
 
@@ -241,8 +242,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const answerContentHtml = `
             <div class="result-user-fullscreen">ĐÁP ÁN</div>
             <div class="flex justify-between text-center text-lg font-semibold mb-2 mt-2">
-                <div class="w-2/5 text-red-500">Thời cơ cách mạng</div>
-                <div class="w-2/5 text-green-500">Nguy cơ</div>
+                <div class="w-2/5 text-red-500">Khó khăn</div>
+                <div class="w-2/5 text-green-500">Thuận lợi</div>
                 <div class="w-1/5 text-gray-500">   </div>
             </div>
             <div class="result-content">
@@ -736,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.hostname === '0.0.0.0') {
             return 'http://localhost:3000';
         } else {
-            return 'https://backend-3-229k.onrender.com';
+            return 'https://backend-2-kfrc.onrender.com';
         }
     }
 
